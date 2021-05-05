@@ -10,7 +10,7 @@ internal class SectionLandController : SectionBase, ILandsListener, ISectionOpen
 {
     public const string VIEW_PREFAB_PATH = "BuilderProjectsPanelMenuSections/SectionLandsView";
 
-    private const string BUILDER_LAND_URL_FORMAT = "https://builder.decentraland.{0}/land/{1}";
+    private const string BUILDER_LAND_URL_FORMAT = "https://builder.decentraland.org/land/{0}";
     private const string MARKETPLACE_URL = "https://market.decentraland.org/";
 
     public event Action<string> OnRequestOpenUrl;
@@ -202,14 +202,10 @@ internal class SectionLandController : SectionBase, ILandsListener, ISectionOpen
     private void OnSettingsPressed(string landId)
     {
         //NOTE: for MVP we are redirecting user to Builder's page
-        OnOpenInDappPressed(landId);
+        WebInterface.OpenURL(string.Format(BUILDER_LAND_URL_FORMAT, landId));
     }
 
-    private void OnOpenInDappPressed(string landId)
-    {
-        string tld = KernelConfig.i.Get()?.tld == "org" ? "org" : "io";
-        OnRequestOpenUrl?.Invoke(string.Format(BUILDER_LAND_URL_FORMAT, tld, landId));
-    }
+    private void OnOpenInDappPressed(string landId) { OnRequestOpenUrl?.Invoke(string.Format(BUILDER_LAND_URL_FORMAT, landId)); }
 
     private void OnJumpInPressed(Vector2Int coords) { OnRequestGoToCoords?.Invoke(coords); }
 

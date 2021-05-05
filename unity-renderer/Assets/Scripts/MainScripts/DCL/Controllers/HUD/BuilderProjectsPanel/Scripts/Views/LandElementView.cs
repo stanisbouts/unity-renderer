@@ -66,10 +66,7 @@ internal class LandElementView : MonoBehaviour, IDisposable
         }
     }
 
-    private void OnEnable()
-    {
-        loadingAnimator.SetBool(isLoadingAnimation, isLoadingThumbnail);
-    }
+    private void OnEnable() { loadingAnimator.SetBool(isLoadingAnimation, isLoadingThumbnail); }
 
     public void SetActive(bool active) { gameObject.SetActive(active); }
 
@@ -131,10 +128,7 @@ internal class LandElementView : MonoBehaviour, IDisposable
         searchInfo.SetRole(isOwner);
     }
 
-    public Transform GetParent()
-    {
-        return transform.parent;
-    }
+    public Transform GetParent() { return transform.parent; }
 
     public void SetParent(Transform parent) { transform.SetParent(parent); }
 

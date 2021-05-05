@@ -130,10 +130,7 @@ namespace Tests
             controller.Dispose();
         }
 
-        private int GetVisibleChildrenAmount(Transform parent)
-        {
-            return parent.Cast<Transform>().Count(child => child.gameObject.activeSelf);
-        }
+        private int GetVisibleChildrenAmount(Transform parent) { return parent.Cast<Transform>().Count(child => child.gameObject.activeSelf); }
 
         private LandWithAccess CreateLandData(string id)
         {

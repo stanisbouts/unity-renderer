@@ -113,15 +113,9 @@ internal class SectionsController : ISectionsController
         }
     }
 
-    public void SetFetchingDataStart()
-    {
-        SetIsLoading(true);
-    }
+    public void SetFetchingDataStart() { SetIsLoading(true); }
 
-    public void SetFetchingDataEnd()
-    {
-        SetIsLoading(false);
-    }
+    public void SetFetchingDataEnd() { SetIsLoading(false); }
 
     private void SetIsLoading(bool isLoading)
     {
@@ -206,6 +200,12 @@ internal class SectionsController : ISectionsController
     {
         OnRequestEditSceneAtCoords?.Invoke(coords);
     }
+
+    private void OnOpenUrlRequested(string url) { OnRequestOpenUrl?.Invoke(url); }
+
+    private void OnGoToCoordsRequested(Vector2Int coords) { OnRequestGoToCoords?.Invoke(coords); }
+
+    private void OnEditSceneAtCoordsRequested(Vector2Int coords) { OnRequestEditSceneAtCoords?.Invoke(coords); }
 
     private void SubscribeEvents(SectionBase sectionBase)
     {

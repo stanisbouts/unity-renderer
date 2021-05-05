@@ -26,8 +26,5 @@ internal class LandController : ILandController
         listener.OnSetLands(userLands);
     }
 
-    void ILandController.RemoveListener(ILandsListener listener)
-    {
-        OnLandsSet -= listener.OnSetLands;
-    }
+    void ILandController.RemoveListener(ILandsListener listener) { OnLandsSet -= listener.OnSetLands; }
 }
