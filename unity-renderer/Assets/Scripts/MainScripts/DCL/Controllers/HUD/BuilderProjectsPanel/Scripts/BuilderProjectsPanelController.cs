@@ -13,7 +13,7 @@ public class BuilderProjectsPanelController : IHUD
 {
     private const string TESTING_ETH_ADDRESS = "0x2fa1859029A483DEFbB664bB6026D682f55e2fcD";
     private const string TESTING_TLD = "org";
-    
+
     internal readonly IBuilderProjectsPanelView view;
 
     private ISectionsController sectionsController;
@@ -24,7 +24,6 @@ public class BuilderProjectsPanelController : IHUD
     private SceneContextMenuHandler sceneContextMenuHandler;
     private LeftMenuHandler leftMenuHandler;
     private LeftMenuSettingsViewHandler leftMenuSettingsViewHandler;
-    private BridgeHandler bridgeHandler;
 
     private ITheGraph theGraph;
     private ICatalyst catalyst;
@@ -45,14 +44,13 @@ public class BuilderProjectsPanelController : IHUD
     {
         DataStore.i.HUDs.builderProjectsPanelVisible.OnChange -= OnVisibilityChanged;
         view.OnClosePressed -= OnClose;
-        
+
         fetchLandPromise?.Dispose();
 
         leftMenuSettingsViewHandler?.Dispose();
         sectionsHandler?.Dispose();
         sceneContextMenuHandler?.Dispose();
         leftMenuHandler?.Dispose();
-        bridgeHandler?.Dispose();
 
         sectionsController?.Dispose();
         scenesViewController?.Dispose();
@@ -62,15 +60,14 @@ public class BuilderProjectsPanelController : IHUD
 
     public void Initialize()
     {
-        Initialize(BuilderProjectsPanelBridge.i,
-            new SectionsController(view.GetSectionContainer()),
+        Initialize(new SectionsController(view.GetSectionContainer()),
             new ScenesViewController(view.GetCardViewPrefab(), view.GetTransform()),
             new LandController(),
             Environment.i.platform.serviceProviders.theGraph,
             Environment.i.platform.serviceProviders.catalyst);
     }
 
-    internal void Initialize(IBuilderProjectsPanelBridge bridge, ISectionsController sectionsController, 
+    internal void Initialize(ISectionsController sectionsController,
         IScenesViewController scenesViewController, ILandController landController, ITheGraph theGraph, ICatalyst catalyst)
     {
         if (isInitialized)
@@ -92,9 +89,7 @@ public class BuilderProjectsPanelController : IHUD
         // handle project scene info on the left menu panel
         leftMenuSettingsViewHandler = new LeftMenuSettingsViewHandler(view.GetSettingsViewReferences(), scenesViewController);
         // handle scene's context menu options
-        sceneContextMenuHandler = new SceneContextMenuHandler(view.GetSceneCardViewContextMenu(), sectionsController, scenesViewController, bridge);
-        // handle in and out bridge communications
-        bridgeHandler = new BridgeHandler(bridge, scenesViewController, landsController, sectionsController);
+        sceneContextMenuHandler = new SceneContextMenuHandler(view.GetSceneCardViewContextMenu(), sectionsController, scenesViewController);
 
         SetView();
 
@@ -108,10 +103,7 @@ public class BuilderProjectsPanelController : IHUD
         DataStore.i.HUDs.builderProjectsPanelVisible.OnChange += OnVisibilityChanged;
     }
 
-    public void SetVisibility(bool visible)
-    {
-        DataStore.i.HUDs.builderProjectsPanelVisible.Set(visible);
-    }
+    public void SetVisibility(bool visible) { DataStore.i.HUDs.builderProjectsPanelVisible.Set(visible); }
 
     private void OnVisibilityChanged(bool isVisible, bool prev)
     {
@@ -119,7 +111,7 @@ public class BuilderProjectsPanelController : IHUD
             return;
 
         view.SetVisible(isVisible);
-        
+
         if (isVisible)
         {
             FetchLandsAndScenes();
@@ -127,10 +119,7 @@ public class BuilderProjectsPanelController : IHUD
         }
     }
 
-    private void OnClose()
-    {
-        SetVisibility(false);
-    }
+    private void OnClose() { SetVisibility(false); }
 
     private void SetView()
     {
@@ -156,9 +145,9 @@ public class BuilderProjectsPanelController : IHUD
             });
         }
 #endif
-        
+
         sectionsController.SetFetchingDataStart();
-        
+
         fetchLandPromise = DeployedScenesFetcher.FetchLandsFromOwner(catalyst, theGraph, address, tld);
         fetchLandPromise
             .Then(lands =>
@@ -178,14 +167,14 @@ public class BuilderProjectsPanelController : IHUD
                 catch (Exception e)
                 {
                     landsController.SetLands(lands);
-                    scenesViewController.SetScenes(new ISceneData[]{});
+                    scenesViewController.SetScenes(new ISceneData[] { });
                 }
             })
             .Catch(error =>
             {
                 sectionsController.SetFetchingDataEnd();
-                landsController.SetLands(new LandWithAccess[]{});
-                scenesViewController.SetScenes(new ISceneData[]{});
+                landsController.SetLands(new LandWithAccess[] { });
+                scenesViewController.SetScenes(new ISceneData[] { });
                 Debug.LogError(error);
             });
     }
@@ -196,10 +185,7 @@ public class BuilderProjectsPanelController : IHUD
         SetVisibility(false);
     }
 
-    private void OpenUrl(string url)
-    {
-        WebInterface.OpenURL(url);
-    }
+    private void OpenUrl(string url) { WebInterface.OpenURL(url); }
 
     private void OnGoToEditScene(Vector2Int coords)
     {

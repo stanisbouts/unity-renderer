@@ -11,7 +11,6 @@ namespace Tests
     public class BuilderProjectsPanelControllerShould
     {
         private BuilderProjectsPanelController controller;
-        private IBuilderProjectsPanelBridge bridge;
         private ISectionsController sectionsController;
         private IScenesViewController scenesViewController;
         private ILandController landsController;
@@ -21,7 +20,6 @@ namespace Tests
         {
             controller = new BuilderProjectsPanelController();
 
-            bridge = Substitute.For<IBuilderProjectsPanelBridge>();
             sectionsController = Substitute.For<ISectionsController>();
             scenesViewController = Substitute.For<IScenesViewController>();
             landsController = Substitute.For<ILandController>();
@@ -30,28 +28,22 @@ namespace Tests
             theGraph.Query(Arg.Any<string>(), Arg.Any<string>()).Returns(new Promise<string>());
             theGraph.Query(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<QueryVariablesBase>()).Returns(new Promise<string>());
             theGraph.QueryLands(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<TheGraphCache>()).Returns(new Promise<List<Land>>());
-            
+
             ICatalyst catalyst = Substitute.For<ICatalyst>();
             catalyst.contentUrl.Returns(string.Empty);
             catalyst.Get(Arg.Any<string>()).Returns(new Promise<string>());
             catalyst.GetEntities(Arg.Any<string>(), Arg.Any<string[]>()).Returns(new Promise<string>());
             catalyst.GetDeployedScenes(Arg.Any<string[]>()).Returns(new Promise<CatalystSceneEntityPayload[]>());
 
-            controller.Initialize(bridge, sectionsController, scenesViewController, 
+            controller.Initialize(sectionsController, scenesViewController,
                 landsController, theGraph, catalyst);
         }
 
         [TearDown]
-        public void TearDown()
-        {
-            controller.Dispose();
-        }
+        public void TearDown() { controller.Dispose(); }
 
         [Test]
-        public void ViewCreatedCorrectly()
-        {
-            Assert.IsNotNull(controller.view);
-        }
+        public void ViewCreatedCorrectly() { Assert.IsNotNull(controller.view); }
 
         [Test]
         public void ViewVisibleCorrectly()
@@ -177,69 +169,6 @@ namespace Tests
 
             sectionsController.OnRequestContextMenuHide += Raise.Event<Action>();
             Assert.IsFalse(contextMenu.gameObject.activeSelf);
-        }
-
-        [Test]
-        public void SceneContextMenuCallControllersMethodsCorrectly()
-        {
-            const string sceneId = "Temptation";
-            controller.view.SetVisible(true);
-
-            var contextMenu = controller.view.GetSceneCardViewContextMenu();
-            contextMenu.Show(sceneId , true, true, false);
-
-            contextMenu.duplicateButton.onClick.Invoke();
-            bridge.Received(1).SendDuplicateProject(sceneId);
-
-            contextMenu.downloadButton.onClick.Invoke();
-            bridge.Received(1).SendDownload(sceneId);
-
-            contextMenu.shareButton.onClick.Invoke();
-            bridge.Received(1).SendShare(sceneId);
-
-            contextMenu.unpublishButton.onClick.Invoke();
-            bridge.Received(1).SendUnPublish(sceneId);
-
-            contextMenu.deleteButton.onClick.Invoke();
-            bridge.Received(1).SendDelete(sceneId);
-
-            contextMenu.quitContributorButton.onClick.Invoke();
-            bridge.Received(1).SendQuitContributor(sceneId);
-
-            contextMenu.settingsButton.onClick.Invoke();
-            scenesViewController.Received(1).SelectScene(sceneId);
-        }
-
-        [Test]
-        public void BridgeReceiveDataCorrectly()
-        {
-            SceneData scene = new SceneData() { name = "Temptation" };
-            string scenesPayload = $"[{JsonUtility.ToJson(scene)}]";
-
-            bridge.OnProjectsSet += Raise.Event<Action<string>>(scenesPayload);
-            scenesViewController.Received(1).SetScenes(Arg.Is<ISceneData[]>(s => s.Length == 1 && s[0].name == scene.name));
-        }
-
-        [Test]
-        public void BridgeSendDataCorrectly()
-        {
-            const string sceneId = "Temptation";
-            var updateDataPayload = new SceneDataUpdatePayload();
-            var updateContributorPayload = new SceneContributorsUpdatePayload();
-            var updateAdminsPayload = new SceneAdminsUpdatePayload();
-            var updateBannedPayload = new SceneBannedUsersUpdatePayload();
-
-            sectionsController.OnRequestUpdateSceneData += Raise.Event<Action<string, SceneDataUpdatePayload>>(sceneId, updateDataPayload);
-            bridge.Received(1).SendSceneDataUpdate(sceneId, updateDataPayload);
-
-            sectionsController.OnRequestUpdateSceneContributors += Raise.Event<Action<string, SceneContributorsUpdatePayload>>(sceneId, updateContributorPayload);
-            bridge.Received(1).SendSceneContributorsUpdate(sceneId, updateContributorPayload);
-
-            sectionsController.OnRequestUpdateSceneAdmins += Raise.Event<Action<string, SceneAdminsUpdatePayload>>(sceneId, updateAdminsPayload);
-            bridge.Received(1).SendSceneAdminsUpdate(sceneId, updateAdminsPayload);
-
-            sectionsController.OnRequestUpdateSceneBannedUsers += Raise.Event<Action<string, SceneBannedUsersUpdatePayload>>(sceneId, updateBannedPayload);
-            bridge.Received(1).SendSceneBannedUsersUpdate(sceneId, updateBannedPayload);
         }
     }
 }
