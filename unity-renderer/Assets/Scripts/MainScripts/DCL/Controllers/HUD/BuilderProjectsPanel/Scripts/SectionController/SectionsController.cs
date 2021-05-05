@@ -166,40 +166,13 @@ internal class SectionsController : ISectionsController
 
     private void OnHideContextMenuRequested() { OnRequestContextMenuHide?.Invoke(); }
 
-    private void OnUpdateSceneDataRequested(string id, SceneDataUpdatePayload payload)
-    {
-        OnRequestUpdateSceneData?.Invoke(id, payload);
-    }
+    private void OnUpdateSceneDataRequested(string id, SceneDataUpdatePayload payload) { OnRequestUpdateSceneData?.Invoke(id, payload); }
 
-    private void OnUpdateSceneContributorsRequested(string id, SceneContributorsUpdatePayload payload)
-    {
-        OnRequestUpdateSceneContributors?.Invoke(id, payload);
-    }
+    private void OnUpdateSceneContributorsRequested(string id, SceneContributorsUpdatePayload payload) { OnRequestUpdateSceneContributors?.Invoke(id, payload); }
 
-    private void OnUpdateSceneAdminsRequested(string id, SceneAdminsUpdatePayload payload)
-    {
-        OnRequestUpdateSceneAdmins?.Invoke(id, payload);
-    }
+    private void OnUpdateSceneAdminsRequested(string id, SceneAdminsUpdatePayload payload) { OnRequestUpdateSceneAdmins?.Invoke(id, payload); }
 
-    private void OnUpdateSceneBannedUsersRequested(string id, SceneBannedUsersUpdatePayload payload)
-    {
-        OnRequestUpdateSceneBannedUsers?.Invoke(id, payload);
-    }
-
-    private void OnOpenUrlRequested(string url)
-    {
-        OnRequestOpenUrl?.Invoke(url);
-    }
-
-    private void OnGoToCoordsRequested(Vector2Int coords)
-    {
-        OnRequestGoToCoords?.Invoke(coords);
-    }
-
-    private void OnEditSceneAtCoordsRequested(Vector2Int coords)
-    {
-        OnRequestEditSceneAtCoords?.Invoke(coords);
-    }
+    private void OnUpdateSceneBannedUsersRequested(string id, SceneBannedUsersUpdatePayload payload) { OnRequestUpdateSceneBannedUsers?.Invoke(id, payload); }
 
     private void OnOpenUrlRequested(string url) { OnRequestOpenUrl?.Invoke(url); }
 

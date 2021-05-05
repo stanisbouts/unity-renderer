@@ -42,6 +42,7 @@ namespace Tests
             triggered = false;
             view.buttonJumpIn.onClick.Invoke();
             Assert.IsTrue(triggered, "OnJumpInPressed not triggered");
+
             triggered = false;
             view.buttonOpenInBuilderDapp.onClick.Invoke();
             Assert.IsTrue(triggered, "buttonOpenInBuilderDapp not triggered");

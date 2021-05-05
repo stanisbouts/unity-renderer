@@ -33,34 +33,7 @@ internal class SectionLandView : MonoBehaviour, IDisposable
 
     public Transform GetLandElementsContainer() { return landElementView.GetParent(); }
 
-    public LandElementView GetLandElementeBaseView()
-    {
-        return landElementView;
-    }
-
-    public void SetEmpty()
-    {
-        contentContainer.SetActive(false);
-        emptyContainer.SetActive(true);
-        noSearchResultContainer.SetActive(false);
-        loadingAnimationContainer.SetActive(false);
-    }
-
-    public void SetLoading()
-    {
-        contentContainer.SetActive(false);
-        emptyContainer.SetActive(false);
-        noSearchResultContainer.SetActive(false);
-        loadingAnimationContainer.SetActive(true);
-    }
-
-    public void SetNoSearchResult()
-    {
-        contentContainer.SetActive(false);
-        emptyContainer.SetActive(false);
-        noSearchResultContainer.SetActive(true);
-        loadingAnimationContainer.SetActive(false);
-    }
+    public LandElementView GetLandElementeBaseView() { return landElementView; }
 
     public void SetEmpty()
     {
