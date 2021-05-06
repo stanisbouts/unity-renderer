@@ -37,7 +37,7 @@ internal class LeftMenuSettingsViewHandler : IDisposable
     {
         this.viewReferences = viewReferences;
         this.scenesViewController = scenesViewController;
-        
+
         defaultThumbnail = viewReferences.thumbnail.texture;
 
         scenesViewController.OnSceneSelected += OnSelectScene;
@@ -46,7 +46,7 @@ internal class LeftMenuSettingsViewHandler : IDisposable
     public void Dispose()
     {
         scenesViewController.OnSceneSelected -= OnSelectScene;
-        
+
         if (promiseAvatarThumbnail != null)
         {
             AssetPromiseKeeper_Texture.i.Forget(promiseAvatarThumbnail);
@@ -59,7 +59,7 @@ internal class LeftMenuSettingsViewHandler : IDisposable
         promiseAvatarThumbnail = null;
         promiseSceneThumbnail = null;
     }
-    
+
     void SetProjectData(ISceneData sceneData)
     {
         viewReferences.titleLabel.text = sceneData.isDeployed ? SCENE_TITLE : PROJECT_TITLE;
@@ -118,9 +118,6 @@ internal class LeftMenuSettingsViewHandler : IDisposable
             AssetPromiseKeeper_Texture.i.Keep(promiseSceneThumbnail);
         }
     }
-    
-    private void OnSelectScene(ISceneCardView sceneCardView)
-    {
-        SetProjectData(sceneCardView.sceneData);
-    }
+
+    private void OnSelectScene(ISceneCardView sceneCardView) { SetProjectData(sceneCardView.sceneData); }
 }

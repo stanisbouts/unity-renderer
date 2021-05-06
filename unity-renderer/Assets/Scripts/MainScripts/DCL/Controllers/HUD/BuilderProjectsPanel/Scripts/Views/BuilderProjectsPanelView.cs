@@ -83,42 +83,24 @@ internal class BuilderProjectsPanelView : MonoBehaviour, IBuilderProjectsPanelVi
         leftPanelMain.SetActive(true);
         leftPanelProjectSettings.SetActive(false);
     }
-    
+
     void IBuilderProjectsPanelView.SetProjectSettingsLeftPanel()
     {
         leftPanelMain.SetActive(false);
         leftPanelProjectSettings.SetActive(true);
     }
 
-    SceneCardView IBuilderProjectsPanelView.GetCardViewPrefab()
-    {
-        return sceneCardViewPrefab;
-    }
-    
-    Transform IBuilderProjectsPanelView.GetSectionContainer()
-    {
-        return sectionsContainer;
-    }
-    
-    Transform IBuilderProjectsPanelView.GetTransform()
-    {
-        return transform;
-    }
+    SceneCardView IBuilderProjectsPanelView.GetCardViewPrefab() { return sceneCardViewPrefab; }
 
-    SearchBarView IBuilderProjectsPanelView.GetSearchBar()
-    {
-        return  searchBarView;
-    }
+    Transform IBuilderProjectsPanelView.GetSectionContainer() { return sectionsContainer; }
 
-    LeftMenuSettingsViewReferences IBuilderProjectsPanelView.GetSettingsViewReferences()
-    {
-        return settingsViewReferences;
-    }
+    Transform IBuilderProjectsPanelView.GetTransform() { return transform; }
 
-    SceneCardViewContextMenu IBuilderProjectsPanelView.GetSceneCardViewContextMenu()
-    {
-        return contextMenu;
-    }
+    SearchBarView IBuilderProjectsPanelView.GetSearchBar() { return  searchBarView; }
+
+    LeftMenuSettingsViewReferences IBuilderProjectsPanelView.GetSettingsViewReferences() { return settingsViewReferences; }
+
+    SceneCardViewContextMenu IBuilderProjectsPanelView.GetSceneCardViewContextMenu() { return contextMenu; }
 
     public void Dispose()
     {
@@ -131,31 +113,25 @@ internal class BuilderProjectsPanelView : MonoBehaviour, IBuilderProjectsPanelVi
     private void Awake()
     {
         name = "_BuilderProjectsPanel";
-        
+
         closeButton.onClick.AddListener(() => OnClosePressed?.Invoke());
         createSceneButton.onClick.AddListener(() => OnCreateScenePressed?.Invoke());
         importSceneButton.onClick.AddListener(() => OnImportScenePressed?.Invoke());
-        backToMainPanelButton.onClick.AddListener(()=> OnBackToMainMenuPressed?.Invoke());
+        backToMainPanelButton.onClick.AddListener(() => OnBackToMainMenuPressed?.Invoke());
         closeTrigger.OnTriggered += CloseTriggerOnOnTriggered;
 
         contextMenu.Hide();
         gameObject.SetActive(false);
-        
+
         for (int i = 0; i < sectionToggles.Length; i++)
         {
             sectionToggles[i].Setup();
         }
     }
 
-    private void OnDestroy()
-    {
-        isDestroyed = true;
-    }
+    private void OnDestroy() { isDestroyed = true; }
 
-    private void CloseTriggerOnOnTriggered(DCLAction_Trigger action)
-    {
-        OnClosePressed?.Invoke();
-    }
+    private void CloseTriggerOnOnTriggered(DCLAction_Trigger action) { OnClosePressed?.Invoke(); }
 
     private void SubmenuScenesDirty()
     {

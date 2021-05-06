@@ -62,12 +62,12 @@ internal class SectionsHandler : IDisposable
         {
             scenesViewController.RemoveListener(projectSceneListener);
         }
-        
+
         if (sectionBase is ISelectSceneListener selectSceneListener)
         {
             scenesViewController.RemoveListener(selectSceneListener);
-        }        
-        
+        }
+
         if (sectionBase is ILandsListener landsListener)
         {
             landController.RemoveListener(landsListener);
@@ -75,9 +75,6 @@ internal class SectionsHandler : IDisposable
 
         searchBarView.SetSearchBar(null, null);
     }
-    
-    void OnSelectScene(ISceneCardView sceneCardView)
-    {
-        sectionsController.OpenSection(SectionId.SETTINGS_PROJECT_GENERAL);
-    }
+
+    void OnSelectScene(ISceneCardView sceneCardView) { sectionsController.OpenSection(SectionId.SETTINGS_PROJECT_GENERAL); }
 }

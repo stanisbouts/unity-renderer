@@ -65,10 +65,7 @@ internal class LeftMenuButtonToggleView : MonoBehaviour, IPointerEnterHandler, I
         }
     }
 
-    private void OnDestroy()
-    {
-        OnToggleOn -= OnReceiveToggleOn;
-    }
+    private void OnDestroy() { OnToggleOn -= OnReceiveToggleOn; }
 
     void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
     {

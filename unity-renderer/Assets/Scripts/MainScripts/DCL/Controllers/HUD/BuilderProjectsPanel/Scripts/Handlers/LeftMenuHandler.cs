@@ -35,10 +35,7 @@ internal class LeftMenuHandler : IDisposable
         sectionsController.OpenSection(lastMainSectionId);
     }
 
-    void OnToggleOn(LeftMenuButtonToggleView toggle)
-    {
-        sectionsController.OpenSection(toggle.openSection);
-    }
+    void OnToggleOn(LeftMenuButtonToggleView toggle) { sectionsController.OpenSection(toggle.openSection); }
 
     void OnOpenSectionId(SectionId sectionId)
     {
@@ -60,10 +57,7 @@ internal class LeftMenuHandler : IDisposable
         }
     }
 
-    void OnSceneSettingsBackPressed()
-    {
-        SetToPreviousMainPanel();
-    }
+    void OnSceneSettingsBackPressed() { SetToPreviousMainPanel(); }
 
     void SetMainLeftPanel()
     {

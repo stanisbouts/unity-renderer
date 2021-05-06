@@ -30,6 +30,9 @@ internal interface ISceneData
 [Serializable]
 internal class SceneData : ISceneData
 {
+    private const string CONTENT_MATURE_SYMBOL = "M";
+    private const string CONTENT_ADULTS_ONLY_SYMBOL = "AO";
+
     public Vector2Int coords;
     public Vector2Int size;
     public string id;
@@ -99,8 +102,8 @@ internal class SceneData : ISceneData
         isMatureContent = false;
         if (!string.IsNullOrEmpty(deployedScene.contentRating))
         {
-            isMatureContent = deployedScene.contentRating.Equals("M", StringComparison.OrdinalIgnoreCase)
-                              || deployedScene.contentRating.Equals("AO", StringComparison.OrdinalIgnoreCase);
+            isMatureContent = deployedScene.contentRating.Equals(CONTENT_MATURE_SYMBOL, StringComparison.OrdinalIgnoreCase)
+                              || deployedScene.contentRating.Equals(CONTENT_ADULTS_ONLY_SYMBOL, StringComparison.OrdinalIgnoreCase);
         }
 
         if (deployedScene.parcels.Length < 2)
@@ -113,7 +116,7 @@ internal class SceneData : ISceneData
             int maxX = deployedScene.parcels[0].x;
             int minY = deployedScene.parcels[0].y;
             int maxY = deployedScene.parcels[0].y;
-            
+
             for (int i = 1; i < deployedScene.parcels.Length; i++)
             {
                 minX = Mathf.Min(minX, deployedScene.parcels[i].x);
@@ -121,8 +124,8 @@ internal class SceneData : ISceneData
                 maxX = Mathf.Max(maxX, deployedScene.parcels[i].x);
                 maxY = Mathf.Max(maxY, deployedScene.parcels[i].y);
             }
-            
-            size = new Vector2Int(Mathf.Abs(maxX-minX), Mathf.Abs(maxY-minY));
+
+            size = new Vector2Int(Mathf.Abs(maxX - minX), Mathf.Abs(maxY - minY));
         }
     }
 }
