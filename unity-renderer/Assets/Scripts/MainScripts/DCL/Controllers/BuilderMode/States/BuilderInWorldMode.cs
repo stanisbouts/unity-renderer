@@ -44,7 +44,10 @@ public class BuilderInWorldMode : MonoBehaviour
 
         this.selectedEntities = selectedEntities;
         gameObject.SetActive(false);
+        builderInWorldEntityHandler.OnEntityDeleted += OnDeleteEntity;
     }
+
+    private void OnDestroy() { builderInWorldEntityHandler.OnEntityDeleted -= OnDeleteEntity; }
 
     public virtual void Activate(ParcelScene scene)
     {

@@ -404,7 +404,7 @@ namespace DCL.Interface
             public int processorCount = SystemInfo.processorCount;
             public int systemMemorySize = SystemInfo.systemMemorySize;
         }
-
+        
         [System.Serializable]
         public class PerformanceHiccupPayload
         {
@@ -950,7 +950,10 @@ namespace DCL.Interface
             });
         }
 
-        public static void SendSystemInfoReport() { SendMessage("SystemInfoReport", new SystemInfoReportPayload()); }
+        public static void SendSystemInfoReport()
+        {
+            SendMessage("SystemInfoReport", new SystemInfoReportPayload());
+        }
 
         public static void SendTermsOfServiceResponse(string sceneId, bool accepted, bool dontShowAgain)
         {
