@@ -352,41 +352,42 @@ workflows:
       - checkout:
           <<: *all_branches_and_tags
 
-      - playmode-tests:
-          <<: *all_branches_and_tags
-          requires:
-            - checkout
-      - asset-bundle-tests:
-          <<: *all_branches_and_tags
-          requires:
-            - checkout
-      - editmode-tests:
-          # <<: *all_branches_and_tags
-          filters:
-            branches:
-              only:
-                - editmode-branch
-          requires:
-            - checkout
-      - build-unity:
-          <<: *all_branches_and_tags
-          requires:
-            - checkout
+      # (TEMP) Just testing
+      # - playmode-tests:
+      #     <<: *all_branches_and_tags
+      #     requires:
+      #       - checkout
+      # - asset-bundle-tests:
+      #     <<: *all_branches_and_tags
+      #     requires:
+      #       - checkout
+      # - editmode-tests:
+      #     # <<: *all_branches_and_tags
+      #     filters:
+      #       branches:
+      #         only:
+      #           - editmode-branch
+      #     requires:
+      #       - checkout
+      # - build-unity:
+      #     <<: *all_branches_and_tags
+      #     requires:
+      #       - checkout
 
-      - build-js-interface:
-          <<: *all_branches_and_tags
-          requires:
-            - build-unity
+      # - build-js-interface:
+      #     <<: *all_branches_and_tags
+      #     requires:
+      #       - build-unity
 
-      - publish-renderer:
-          filters:
-            branches:
-              only:
-                - master
-            tags:
-              only: /^\d+\.\d+\.\d+(.*)/ # npm tag + latest
-          requires:
-            - build-unity
-            - build-js-interface
-            - playmode-tests
-            # - editmode-tests
+      # - publish-renderer:
+      #     filters:
+      #       branches:
+      #         only:
+      #           - master
+      #       tags:
+      #         only: /^\d+\.\d+\.\d+(.*)/ # npm tag + latest
+      #     requires:
+      #       - build-unity
+      #       - build-js-interface
+      #       - playmode-tests
+      #       # - editmode-tests
