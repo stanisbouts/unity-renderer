@@ -88,6 +88,14 @@ jobs:
           root: *working_directory
           paths:
             - "*"
+      - run:
+          name: "Prepare upm package"
+          command: |
+            cd unity-renderer
+            zip -r upm-unity-renderer.zip ./
+      - store_artifacts:
+          name: UPM Package
+          path: ./unity-renderer/upm-unity-renderer.zip
 
   ############
   ## THIS IS TEMPORARILY DISABLED AND RUNS ONLY IN THE "editmode-branch" branch

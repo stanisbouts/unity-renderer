@@ -14,7 +14,7 @@ namespace DCL
 
         private void SendMessageToWeb(string type, string message)
         {
-#if UNITY_EDITOR
+#if UNITY_EDITOR || UNITY_STANDALONE
             var x = new Message()
             {
                 type = type,
@@ -145,7 +145,7 @@ namespace DCL
                 RendereableAssetLoadHelper.customContentServerUrl = customContentServerUrl;
             }
 
-#if UNITY_EDITOR
+#if UNITY_EDITOR || UNITY_STANDALONE
             DCL.DataStore.i.debugConfig.isWssDebugMode = true;
 
             string wssUrl = this.wssServerUrl;
@@ -236,7 +236,7 @@ namespace DCL
 
         private void OnDestroy()
         {
-#if UNITY_EDITOR
+#if UNITY_EDITOR || UNITY_STANDALONE
             if (ws != null)
             {
                 ws.Stop();
@@ -247,7 +247,7 @@ namespace DCL
 
         void Update()
         {
-#if UNITY_EDITOR
+#if UNITY_EDITOR || UNITY_STANDALONE
             lock (WSSController.queuedMessages)
             {
                 if (queuedMessagesDirty)
