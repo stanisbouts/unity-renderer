@@ -215,7 +215,7 @@ namespace DCL.Rendering
                 }
 
                 SetCullingForRenderer(r, shouldBeVisible, shouldHaveShadow);
-#if UNITY_EDITOR
+#if (UNITY_EDITOR || UNITY_STANDALONE)
                 DrawDebugGizmos(shouldBeVisible, bounds, boundingPoint);
 #endif
                 timeBudgetCount += Time.realtimeSinceStartup - startTime;

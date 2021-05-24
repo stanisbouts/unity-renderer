@@ -33,7 +33,7 @@ public class RenderProfileWorld : ScriptableObject
 
     [Header("Misc")] public RenderProfileAvatar avatarProfile;
 
-#if UNITY_EDITOR
+#if (UNITY_EDITOR || UNITY_STANDALONE)
     public bool fillWithRenderSettings;
     public bool copyToRenderSettings;
 

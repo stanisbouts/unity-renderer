@@ -46,7 +46,7 @@ namespace DCL
 
             DCL.Interface.WebInterface.SendSystemInfoReport();
 
-#if !UNITY_EDITOR
+#if !(UNITY_EDITOR || UNITY_STANDALONE)
             Debug.Log("DCL Unity Build Version: " + DCL.Configuration.ApplicationSettings.version);
             Debug.unityLogger.logEnabled = false;
 

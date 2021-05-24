@@ -34,7 +34,7 @@ namespace Builder
 
             UpdateMouseWheelInput();
 
-#if UNITY_EDITOR
+#if (UNITY_EDITOR || UNITY_STANDALONE)
             EditorKeyDownEvent();
 #endif
         }
@@ -92,7 +92,7 @@ namespace Builder
             }
         }
 
-#if UNITY_EDITOR
+#if (UNITY_EDITOR || UNITY_STANDALONE)
         GameObject bridgeGameObject;
 
         private void EditorKeyDownEvent()
