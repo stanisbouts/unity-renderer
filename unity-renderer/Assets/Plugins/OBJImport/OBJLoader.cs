@@ -8,7 +8,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-#if (UNITY_EDITOR || UNITY_STANDALONE)
+#if UNITY_EDITOR
 using UnityEditor;
 #endif
 
@@ -26,7 +26,7 @@ public class OBJLoader
 
 
     //functions
-#if (UNITY_EDITOR || UNITY_STANDALONE)
+#if UNITY_EDITOR
     [MenuItem("GameObject/Import From OBJ")]
     static void ObjLoadMenu()
     {
