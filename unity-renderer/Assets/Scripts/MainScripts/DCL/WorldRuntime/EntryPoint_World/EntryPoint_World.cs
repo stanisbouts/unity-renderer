@@ -29,7 +29,7 @@ public class EntryPoint_World
     public EntryPoint_World(IMessageQueueHandler queueHandler)
     {
         EntryPoint_World.queueHandler = queueHandler;
-#if UNITY_WEBGL && !UNITY_EDITOR
+#if UNITY_WEBGL
         SetCallback_CreateEntity(CreateEntity);
         SetCallback_RemoveEntity(RemoveEntity);
         SetCallback_SceneReady(SceneReady);

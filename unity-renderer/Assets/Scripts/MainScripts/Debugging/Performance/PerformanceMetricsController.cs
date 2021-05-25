@@ -18,7 +18,7 @@ namespace DCL
 
         public void Update()
         {
-#if !UNITY_EDITOR
+#if !(UNITY_EDITOR || UNITY_STANDALONE)
             if (!CommonScriptableObjects.focusState.Get())
                 return;
 #endif

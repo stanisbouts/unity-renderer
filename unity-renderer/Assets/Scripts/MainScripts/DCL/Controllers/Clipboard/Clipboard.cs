@@ -28,7 +28,7 @@ public class Clipboard : IClipboard
     /// <returns>Clipboard instance</returns>
     public static Clipboard Create()
     {
-#if UNITY_WEBGL && !(UNITY_EDITOR || UNITY_STANDALONE)
+#if UNITY_WEBGL
         return new Clipboard(ClipboardWebGL.i);
 #else
         return new Clipboard(new ClipboardStandalone());

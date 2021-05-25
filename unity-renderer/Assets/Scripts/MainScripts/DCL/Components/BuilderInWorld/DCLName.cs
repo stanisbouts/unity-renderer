@@ -38,7 +38,7 @@ public class DCLName : BaseDisposable
             entity.OnNameChange?.Invoke(modelToApply);
         }
 
-#if (UNITY_EDITOR || UNITY_STANDALONE)
+#if UNITY_EDITOR
         foreach (IDCLEntity decentralandEntity in this.attachedEntities)
         {
             if (!string.IsNullOrEmpty(oldName))

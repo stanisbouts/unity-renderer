@@ -1,4 +1,4 @@
-#if UNITY_WEBGL && !(UNITY_EDITOR || UNITY_STANDALONE)
+#if UNITY_WEBGL
 #define WEB_PLATFORM
 #endif
 
@@ -30,7 +30,7 @@ namespace DCL
 
         void Update()
         {
-#if UNITY_EDITOR
+#if UNITY_EDITOR || UNITY_STANDALONE
             //Browser is changing this automatically
             if (Input.GetKeyDown(KeyCode.Escape))
             {
