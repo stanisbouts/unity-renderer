@@ -204,10 +204,10 @@ DCL_CachedXHR.cache = {
 
         idb_enabled_future.then(
             function (is_enabled) {
-                is_enabled &= window.indexedDB == null; // NOTE(Brian): if config comes as false, disable in chrome only
+                is_enabled &= !window.indexedDB; // NOTE(Brian): if config comes as false, disable in chrome only
                 self.enabled = is_enabled;
 
-                if (window.indexedDB == null) {
+                if (!window.indexedDB) {
                     DCL_CachedXHR.log("Non-chrome detected!. IndexedDB is " + !!DCL_CachedXHR.cache.enabled);
                 } else {
                     DCL_CachedXHR.log("We are in chrome. IndexedDB is " + !!DCL_CachedXHR.cache.enabled);
