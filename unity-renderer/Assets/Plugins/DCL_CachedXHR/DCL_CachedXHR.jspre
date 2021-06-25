@@ -192,7 +192,7 @@ DCL_CachedXHR.cache = {
     },
     init: function () {
         var self = this;
-        DCL_CachedXHR.log("Initializing plugin... waiting for config...");
+        DCL_CachedXHR.log("Initializing plugin... waiting for config... TEST");
 
         var idb_enabled_future = window.USE_UNITY_INDEXED_DB_CACHE;
 
