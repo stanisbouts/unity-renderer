@@ -222,6 +222,7 @@ DCL_CachedXHR.cache = {
         var self = this;
         onError = function (e) {
             DCL_CachedXHR.log("can not open indexedDB database: " + e.message);
+            DCL_CachedXHR.log("test 2: " + e);
             self.indexedDB = null;
             self.processQueue();
             if (e.preventDefault) e.preventDefault();
