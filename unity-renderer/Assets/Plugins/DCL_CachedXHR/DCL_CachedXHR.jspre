@@ -267,10 +267,14 @@ DCL_CachedXHR.cache = {
 
         var self = this;
 
+        return DCL_CachedXHR.log("Hello world 1");
+
         if (!self.indexedDB)
             return callback(new Error("indexedDB is not available"));
         if (!self.db)
-            return self.queue.push({action: "put", arguments: arguments});
+            return self.queue.push({action: "put", arguments: arguments, onerror: onerror});
+
+        return DCL_CachedXHR.log("Hello world 2");
 
         meta.version = self.version;
 
@@ -299,7 +303,7 @@ DCL_CachedXHR.cache = {
         if (!self.indexedDB)
             return callback(new Error("indexedDB is not available"));
         if (!self.db)
-            return self.queue.push({action: "get", arguments: arguments});
+            return self.queue.push({action: "get", arguments: arguments, onerror: onerror});
 
         var getDB = self.db.transaction([self.store], "readonly").objectStore(self.store).get(self.id(requestURL));
         getDB.onerror = function (e) {
