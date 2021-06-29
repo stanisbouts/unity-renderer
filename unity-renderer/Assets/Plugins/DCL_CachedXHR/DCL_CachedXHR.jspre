@@ -267,14 +267,14 @@ DCL_CachedXHR.cache = {
 
         var self = this;
 
-        return DCL_CachedXHR.log("Hello world 1");
+        DCL_CachedXHR.log("Hello world 1");
 
         if (!self.indexedDB)
             return callback(new Error("indexedDB is not available"));
         if (!self.db)
             return self.queue.push({action: "put", arguments: arguments, onerror: onerror});
 
-        return DCL_CachedXHR.log("Hello world 2");
+        DCL_CachedXHR.log("Hello world 2");
 
         meta.version = self.version;
 
