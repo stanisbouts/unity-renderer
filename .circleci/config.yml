@@ -165,6 +165,12 @@ jobs:
                 exit $?
             fi;
           no_output_timeout: 30m
+      - run:
+          name: nunit-to-junit
+          command: |
+            apt-get update
+            apt-get install -y xsltproc
+            xsltproc --output unity-renderer/playmode-results.xml nunit-to-junit.xsl unity-renderer/test-results/playmode-results-junit.xml
       - store_test_results:
           path: ./unity-renderer/test-results
       - store_artifacts:
@@ -322,8 +328,8 @@ jobs:
           name: prepare code coverage
           command: |
             ls -la /tmp/workspace/unity-renderer/browser-interface/dist
-            ls -la /tmp/workspace/unity-renderer/unity-renderer/CodeCoverage
-            cp -r /tmp/workspace/unity-renderer/unity-renderer/CodeCoverage /tmp/workspace/unity-renderer/browser-interface/dist
+            ls -la /tmp/workspace/unity-renderer/unity-renderer/CodeCoverage/Report/
+            cp -r /tmp/workspace/unity-renderer/unity-renderer/CodeCoverage/Report/ /tmp/workspace/unity-renderer/browser-interface/dist/coverage/
       - run: sudo apt-get -y -qq install awscli
       - run:
           working_directory: *node_workspace
