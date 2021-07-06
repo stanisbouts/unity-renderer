@@ -167,6 +167,7 @@ jobs:
           no_output_timeout: 30m
       - run:
           name: nunit-to-junit
+          when: always
           command: |
             apt-get update
             apt-get install -y xsltproc
@@ -327,9 +328,7 @@ jobs:
           working_directory: *node_workspace
           name: prepare code coverage
           command: |
-            ls -la /tmp/workspace/unity-renderer/browser-interface/dist
-            ls -la /tmp/workspace/unity-renderer/unity-renderer/CodeCoverage/Report/
-            cp -r /tmp/workspace/unity-renderer/unity-renderer/CodeCoverage/Report/ /tmp/workspace/unity-renderer/browser-interface/dist/coverage/
+            cp -r /tmp/workspace/unity-renderer/unity-renderer/CodeCoverage/Report/ /tmp/workspace/unity-renderer/browser-interface/dist/code-coverage/
       - run: sudo apt-get -y -qq install awscli
       - run:
           working_directory: *node_workspace
