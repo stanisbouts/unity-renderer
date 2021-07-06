@@ -321,9 +321,9 @@ jobs:
           working_directory: *node_workspace
           name: prepare code coverage
           command: |
-            ls -la ../dist
-            ls -la ../../unity-renderer/CodeCoverage
-            cp -r ../../unity-renderer/CodeCoverage ../dist
+            ls -la /tmp/workspace/unity-renderer/browser-interface/dist
+            ls -la /tmp/workspace/unity-renderer/unity-renderer/CodeCoverage
+            cp -r /tmp/workspace/unity-renderer/unity-renderer/CodeCoverage /tmp/workspace/unity-renderer/browser-interface/dist
       - run: sudo apt-get -y -qq install awscli
       - run:
           working_directory: *node_workspace
