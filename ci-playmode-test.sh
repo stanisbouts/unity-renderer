@@ -4,13 +4,15 @@ source ci-setup.sh
 
 echo "Running playmode tests for $PROJECT_PATH"
 
+mkdir -p $PROJECT_PATH/test-results/
+
 xvfb-run --auto-servernum --server-args='-screen 0 640x480x24' $UNITY_PATH/Editor/Unity \
   -batchmode \
   -projectPath "$PROJECT_PATH" \
   -logFile "$PROJECT_PATH/playmode-logs.txt" \
   -runTests \
   -testPlatform PlayMode \
-  -testResults "$PROJECT_PATH/playmode-results.xml" \
+  -testResults "$PROJECT_PATH/test-results/results.xml" \
   -enableCodeCoverage \
   -coverageResultsPath "$PROJECT_PATH/CodeCoverage" \
   -coverageOptions "generateAdditionalMetrics;generateHtmlReport;generateBadgeReport"
