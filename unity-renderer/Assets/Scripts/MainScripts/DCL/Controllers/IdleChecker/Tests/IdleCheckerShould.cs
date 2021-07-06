@@ -20,7 +20,7 @@ namespace Tests
             idleChecker.Update();
 
             // It should start as not idle
-            Assert.IsFalse(idleChecker.isIdle());
+            Assert.IsTrue(idleChecker.isIdle()); // ON PURPUSE ERROR
 
             yield return new DCL.WaitUntil(() =>
             {
