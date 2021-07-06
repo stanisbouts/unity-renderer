@@ -166,7 +166,7 @@ jobs:
             fi;
           no_output_timeout: 30m
       - store_test_results:
-          path: test-results
+          path: ./unity-renderer/test-results
       - store_artifacts:
           name: Store logs
           path: ./unity-renderer/playmode-logs.txt
