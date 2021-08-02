@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 internal static class LandHelper
 {
@@ -35,7 +36,16 @@ internal static class LandHelper
             var owner = queryResult.operatorAuthorizations[i].owner;
             for (int j = 0; j < owner.parcels.Length; j++)
             {
-                var authLand = FromParcel(owner.parcels[i], LandRole.OPERATOR);
+                Land authLand = null;
+                try
+                {
+                    authLand = FromParcel(owner.parcels[j], LandRole.OPERATOR);
+                }
+                catch (Exception e)
+                {
+                    Debug.Log(e.Message);
+                }
+
                 authLand.operators.Add(lowerCaseAddress);
 
                 // skip if already owned or operated
@@ -62,37 +72,44 @@ internal static class LandHelper
         }
 
         return lands
-            .Where(land => land.type == LandType.PARCEL || land.parcels.Count > 0)
-            .ToList();
+               .Where(land => land.type == LandType.PARCEL || land.parcels.Count > 0)
+               .ToList();
     }
 
     static Land FromParcel(ParcelFields parcel, LandRole role)
     {
-        string id = CoordsToId(parcel.x, parcel.y);
-        Land result = new Land()
+        try
         {
-            id = id,
-            name = parcel.data?.name ?? $"Parcel {id}",
-            type = LandType.PARCEL,
-            role = role,
-            description = parcel.data?.description,
-            owner = parcel.owner.address,
-            operators = new List<string>()
-        };
+            string id = CoordsToId(parcel.x, parcel.y);
+            Land result = new Land()
+            {
+                id = id,
+                name = parcel.data?.name ?? $"Parcel {id}",
+                type = LandType.PARCEL,
+                role = role,
+                description = parcel.data?.description,
+                owner = parcel.owner.address,
+                operators = new List<string>()
+            };
 
-        if (int.TryParse(parcel.x, out int x) && int.TryParse(parcel.y, out int y))
-        {
-            result.x = x;
-            result.y = y;
-            result.parcels = new List<Parcel>() { new Parcel() { id = CoordsToId(parcel.x, parcel.y), x = x, y = y } };
+            if (int.TryParse(parcel.x, out int x) && int.TryParse(parcel.y, out int y))
+            {
+                result.x = x;
+                result.y = y;
+                result.parcels = new List<Parcel>() { new Parcel() { id = CoordsToId(parcel.x, parcel.y), x = x, y = y } };
+            }
+
+            if (!string.IsNullOrEmpty(parcel.updateOperator))
+            {
+                result.operators.Add(parcel.updateOperator);
+            }
+            return result;
         }
-
-        if (!string.IsNullOrEmpty(parcel.updateOperator))
+        catch (Exception e)
         {
-            result.operators.Add(parcel.updateOperator);
+            Debug.Log(e.Message);
         }
-
-        return result;
+        return null;
     }
 
     static Land FromEstate(EstateFields estate, LandRole role)
