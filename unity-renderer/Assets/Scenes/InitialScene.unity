@@ -1078,14 +1078,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 1444882335}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8b5e6e1eec417844b92edd6ca2f8a2b2, type: 3}
+  m_Script: {fileID: 11500000, guid: 73b83adac0a4ddd039a0a1c9c2a9a163, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   openBrowserWhenStart: 1
   useCustomContentServer: 0
   customContentServerUrl: http://localhost:1338/
-  baseUrlMode: 1
-  baseUrlCustom: lay.decentraland.zone/?DEBUG_MESSAGES&MESSAGES&
+  baseUrlMode: 0
+  baseUrlCustom: https://play.decentraland.zone/?
   environment: 4
   realm: fenrir-amber
   startInCoords: {x: 0, y: 0}
