@@ -8,7 +8,8 @@
         "Protocol",
         "QueuedSceneMessage",
         "MessagingInterfaces",
-        "EntryPoint_World"
+        "NativeBridgeCommunication",
+        "KernelCommunication"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

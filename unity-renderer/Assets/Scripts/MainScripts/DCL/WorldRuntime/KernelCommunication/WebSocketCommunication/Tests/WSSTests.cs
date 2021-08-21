@@ -27,9 +27,10 @@ namespace Tests
         [UnityTest]
         public IEnumerator BasicConnectionTest()
         {
+            yield return null;
             GameObject wssControllerGO = new GameObject("WSS Controller");
 
-            WSSController wssController = wssControllerGO.AddComponent<WSSController>();
+            WebSocketCommunication wssController = new WebSocketCommunication();
             DCLCharacterController.i.gravity = 0;
 
             yield return new WaitForSeconds(1.0f);

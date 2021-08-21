@@ -20,7 +20,7 @@ namespace DCL.Interface
      */
     public static class WebInterface
     {
-        public static bool VERBOSE = false;
+        public static bool VERBOSE = true;
         public static System.Action<string, string> OnMessageFromEngine;
 
         [System.Serializable]
@@ -611,18 +611,46 @@ namespace DCL.Interface
     [DllImport("__Internal")] public static extern void MessageFromEngine(string type, string message);
     [DllImport("__Internal")] public static extern string GetGraphicCard();
 #else
-        public static void StartDecentraland() { }
-
+        private static bool communicationReady = false;
+        private static List<(string, string)> queuedMessages = new List<(string, string)>();
+        public static void StartDecentraland() {}
         public static void MessageFromEngine(string type, string message)
         {
-            if (OnMessageFromEngine != null)
+            if (communicationReady && OnMessageFromEngine != null)
             {
                 OnMessageFromEngine.Invoke(type, message);
+                if (VERBOSE)
+                {
+                    Debug.Log("MessageFromEngine called with: " + type + ", " + message);
+                }
             }
-
-            if (VERBOSE)
+            else
             {
-                Debug.Log("MessageFromEngine called with: " + type + ", " + message);
+                if (communicationReady)
+                {
+                    Debug.Log("Communication ready, but MessageFromEngine is false :c");
+                }
+                else
+                {
+                    Debug.Log("OnMessageFromEngine == null!! " + type);                    
+                }
+                lock (queuedMessages)
+                {
+                    queuedMessages.Add((type, message));                    
+                }
+            }
+        }
+
+        public static void CommunicationReady()
+        {
+            communicationReady = true;
+            lock (queuedMessages)
+            {
+                foreach((string type, string payload) in queuedMessages)
+                {
+                    MessageFromEngine(type, payload);
+                }
+                queuedMessages.Clear();
             }
         }
 
@@ -1025,7 +1053,10 @@ namespace DCL.Interface
             });
         }
 
-        public static void SendSystemInfoReport() { SendMessage("SystemInfoReport", new SystemInfoReportPayload()); }
+        public static void SendSystemInfoReport()
+        {
+            SendMessage("SystemInfoReport", new SystemInfoReportPayload());
+        }
 
         public static void SendTermsOfServiceResponse(string sceneId, bool accepted, bool dontShowAgain)
         {
