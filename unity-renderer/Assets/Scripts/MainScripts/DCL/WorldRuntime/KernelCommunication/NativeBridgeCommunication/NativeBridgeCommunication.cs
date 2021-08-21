@@ -29,6 +29,7 @@ public class NativeBridgeCommunication : IKernelCommunication
     public NativeBridgeCommunication(IMessageQueueHandler queueHandler)
     {
         NativeBridgeCommunication.queueHandler = queueHandler;
+#if UNITY_WEBGL && !UNITY_EDITOR
         SetCallback_CreateEntity(CreateEntity);
         SetCallback_RemoveEntity(RemoveEntity);
         SetCallback_SceneReady(SceneReady);
@@ -51,6 +52,7 @@ public class NativeBridgeCommunication : IKernelCommunication
         SetCallback_OpenNftDialog(OpenNftDialog);
 
         SetCallback_Query(Query);
+#endif
     }
 
     [MonoPInvokeCallback(typeof(JS_Delegate_VSSS))]
