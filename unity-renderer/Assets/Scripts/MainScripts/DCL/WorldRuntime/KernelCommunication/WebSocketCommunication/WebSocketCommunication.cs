@@ -69,7 +69,6 @@ public class DCLWebSocketService : WebSocketBehavior
         {
             //WebInterface.SendSystemInfoReport();
             SendMessageToWeb("SystemInfoReport", "{}");
-            WebInterface.CommunicationReady();
             Debug.Log("Ready :)");
         }
         catch (Exception ex)

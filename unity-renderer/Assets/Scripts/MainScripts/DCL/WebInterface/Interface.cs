@@ -639,7 +639,7 @@ namespace DCL.Interface
             }
         }
 
-        public static void CommunicationReady()
+        private static void CommunicationReady()
         {
             hasQueuedMessages = false;
             lock (queuedMessages)
