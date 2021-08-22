@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Castle.Core.Internal;
 using DCL.Helpers;
 using DCL.Models;
 using UnityEngine;
@@ -611,13 +612,17 @@ namespace DCL.Interface
     [DllImport("__Internal")] public static extern void MessageFromEngine(string type, string message);
     [DllImport("__Internal")] public static extern string GetGraphicCard();
 #else
-        private static bool communicationReady = false;
+        private static bool hasQueuedMessages = false;
         private static List<(string, string)> queuedMessages = new List<(string, string)>();
         public static void StartDecentraland() {}
         public static void MessageFromEngine(string type, string message)
         {
-            if (communicationReady && OnMessageFromEngine != null)
+            if (OnMessageFromEngine != null)
             {
+                if (hasQueuedMessages)
+                {
+                    CommunicationReady();
+                }
                 OnMessageFromEngine.Invoke(type, message);
                 if (VERBOSE)
                 {
@@ -626,24 +631,17 @@ namespace DCL.Interface
             }
             else
             {
-                if (communicationReady)
-                {
-                    Debug.Log("Communication ready, but MessageFromEngine is false :c");
-                }
-                else
-                {
-                    Debug.Log("OnMessageFromEngine == null!! " + type);                    
-                }
                 lock (queuedMessages)
                 {
                     queuedMessages.Add((type, message));                    
                 }
+                hasQueuedMessages = true;
             }
         }
 
         public static void CommunicationReady()
         {
-            communicationReady = true;
+            hasQueuedMessages = false;
             lock (queuedMessages)
             {
                 foreach((string type, string payload) in queuedMessages)
