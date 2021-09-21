@@ -1,6 +1,8 @@
-﻿using UnityEngine;
+﻿using DCL;
+using DCL.SettingsCommon.SettingsControllers.BaseControllers;
+using UnityEngine;
 
-namespace DCL.SettingsControls
+namespace DCL.SettingsCommon.SettingsControllers.SpecificControllers
 {
     [CreateAssetMenu(menuName = "Settings/Controllers/Controls/Max Non-LOD Avatars", fileName = "MaxNonLODAvatarsControlController")]
     public class MaxNonLODAvatarsControlController : SliderSettingsControlController

@@ -1,6 +1,8 @@
-﻿using UnityEngine;
+﻿using DCL;
+using DCL.SettingsCommon.SettingsControllers.BaseControllers;
+using UnityEngine;
 
-namespace DCL.SettingsControls
+namespace DCL.SettingsCommon.SettingsControllers.SpecificControllers
 {
     [CreateAssetMenu(menuName = "Settings/Controllers/Controls/Avatars LOD Distance", fileName = "AvatarsLODDistanceControlController")]
     public class AvatarsLODDistanceControlController : SliderSettingsControlController
