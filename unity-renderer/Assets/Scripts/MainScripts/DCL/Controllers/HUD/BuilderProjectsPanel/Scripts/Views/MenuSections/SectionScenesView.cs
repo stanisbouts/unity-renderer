@@ -1,28 +1,65 @@
 ﻿using System;
+using DCL.Helpers;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class SectionScenesView : MonoBehaviour, IDisposable
+internal class SectionScenesView : MonoBehaviour, IDisposable
 {
-    [Header("Cards Containers")]
-    [SerializeField] internal Transform deployedSceneContainer;
-    [SerializeField] internal Transform projectSceneContainer;
+    public event Action OnScrollRectValueChanged;
 
-    [Header("Screens")]
-    [SerializeField] internal GameObject emptyScreen;
-    [SerializeField] internal GameObject contentScreen;
-
-    [Header("Group Containers")]
-    [SerializeField] internal GameObject inWorldContainer;
-    [SerializeField] internal GameObject projectsContainer;
-
-    [Header("Buttons")]
-    [SerializeField] internal Button btnInWorldViewAll;
-    [SerializeField] internal Button btnProjectsViewAll;
+    [SerializeField] public Transform scenesCardContainer;
+    [SerializeField] public ScrollRect scrollRect;
+    [SerializeField] internal GameObject contentContainer;
+    [SerializeField] internal GameObject emptyContainer;
+    [SerializeField] internal GameObject noSearchResultContainer;
+    [SerializeField] internal GameObject loadingAnimationContainer;
 
     private bool isDestroyed = false;
 
-    private void OnDestroy() { isDestroyed = true; }
+    public void SetParent(Transform parent)
+    {
+        transform.SetParent(parent);
+        transform.ResetLocalTRS();
+    }
+
+    public void SetActive(bool active) { gameObject.SetActive(active); }
+
+    public void ResetScrollRect() { scrollRect.verticalNormalizedPosition = 1; }
+
+    public void SetEmpty()
+    {
+        contentContainer.SetActive(false);
+        emptyContainer.SetActive(true);
+        noSearchResultContainer.SetActive(false);
+        loadingAnimationContainer.SetActive(false);
+    }
+
+    public void SetLoading()
+    {
+        contentContainer.SetActive(false);
+        emptyContainer.SetActive(false);
+        noSearchResultContainer.SetActive(false);
+        loadingAnimationContainer.SetActive(true);
+    }
+
+    public void SetNoSearchResult()
+    {
+        contentContainer.SetActive(false);
+        emptyContainer.SetActive(false);
+        noSearchResultContainer.SetActive(true);
+        loadingAnimationContainer.SetActive(false);
+    }
+
+    public void SetFilled()
+    {
+        contentContainer.SetActive(true);
+        emptyContainer.SetActive(false);
+        noSearchResultContainer.SetActive(false);
+        loadingAnimationContainer.SetActive(false);
+        ResetScrollRect();
+    }
+
+    public Transform GetCardsContainer() { return scenesCardContainer; }
 
     public void Dispose()
     {
@@ -31,4 +68,14 @@ public class SectionScenesView : MonoBehaviour, IDisposable
             Destroy(gameObject);
         }
     }
+
+    private void Awake() { scrollRect.onValueChanged.AddListener(OnScrollValueChanged); }
+
+    private void OnDestroy()
+    {
+        isDestroyed = true;
+        scrollRect.onValueChanged.RemoveListener(OnScrollValueChanged);
+    }
+
+    private void OnScrollValueChanged(Vector2 value) { OnScrollRectValueChanged?.Invoke(); }
 }
