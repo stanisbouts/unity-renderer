@@ -5,8 +5,8 @@ set -u  # fail if any env var is not set
 
 source ci-setup.sh
 
-SCENE_ID="$(curl -s "https://peer.decentraland.org/content/entities/scene?pointer=-110,-110" | jq -r '.[0].id')"
-echo "Testing scene at -110,-110: $SCENE_ID"
+SCENE_ID="$(curl -s "https://peer.decentraland.org/content/entities/scene?pointer=63,-124" | jq -r '.[0].id')"
+echo "Testing scene at 63,-124: $SCENE_ID"
 
 pwd
 
