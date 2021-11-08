@@ -26,7 +26,7 @@ public class GifProcessor
     /// <param name="OnSuccess">success callback with gif's frames arry</param>
     /// <param name="OnFail">fail callback</param>
     /// <returns></returns>
-    public IEnumerator Load(Action<GifFrameData[]> OnSuccess, Action OnFail)
+    public IEnumerator Load(Action<GifFrameData[]> OnSuccess, Action<string> OnFail)
     {
         if (jsGIFProcessingEnabled)
         {
@@ -55,7 +55,7 @@ public class GifProcessor
         }
     }
 
-    private IEnumerator JSProcessorLoad(string url, Action<GifFrameData[]> OnSuccess, Action OnFail)
+    private IEnumerator JSProcessorLoad(string url, Action<GifFrameData[]> OnSuccess, Action<string> OnFail)
     {
         bool fetchFailed = false;
         yield return DCL.GIFProcessingBridge.i.RequestGIFProcessor(url,
@@ -72,11 +72,11 @@ public class GifProcessor
 
         if (fetchFailed)
         {
-            OnFail?.Invoke();
+            OnFail?.Invoke("gif fetch failed");
         }
     }
 
-    private IEnumerator UniGifProcessorLoad(string url, Action<GifFrameData[]> OnSuccess, Action OnFail)
+    private IEnumerator UniGifProcessorLoad(string url, Action<GifFrameData[]> OnSuccess, Action<string> OnFail)
     {
         webRequestOp = DCL.Environment.i.platform.webRequest.Get(url: url, disposeOnCompleted: false);
 
@@ -94,13 +94,13 @@ public class GifProcessor
                     }
                     else
                     {
-                        OnFail?.Invoke();
+                        OnFail?.Invoke("gif with null frames");
                     }
                 });
         }
         else
         {
-            OnFail?.Invoke();
+            OnFail?.Invoke(webRequestOp.webRequest.error);
         }
 
         webRequestOp.Dispose();

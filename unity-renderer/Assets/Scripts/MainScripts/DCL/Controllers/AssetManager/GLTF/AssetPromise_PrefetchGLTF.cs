@@ -8,7 +8,7 @@ namespace DCL
 
         public override object GetId() { return base.GetId(); }
 
-        protected override void OnLoad(System.Action OnSuccess, System.Action OnFail) { base.OnLoad(OnSuccess, OnFail); }
+        protected override void OnLoad(System.Action OnSuccess, System.Action<string> OnFail) { base.OnLoad(OnSuccess, OnFail); }
 
         void ParseGLTFWebRequestedFile(ref string requestedFileName) { provider.TryGetContentsUrl(assetDirectoryPath + requestedFileName, out requestedFileName); }
 

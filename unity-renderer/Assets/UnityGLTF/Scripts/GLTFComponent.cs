@@ -63,7 +63,7 @@ namespace UnityGLTF
 
         public GameObject loadingPlaceholder;
         public Action OnFinishedLoadingAsset;
-        public Action OnFailedLoadingAsset;
+        public Action<string> OnFailedLoadingAsset;
 
         [HideInInspector] public bool alreadyLoadedAsset = false;
         [HideInInspector] public GameObject loadedAssetRootGameObject;
@@ -98,7 +98,7 @@ namespace UnityGLTF
 
         public Action OnSuccess { get { return OnFinishedLoadingAsset; } set { OnFinishedLoadingAsset = value; } }
 
-        public Action OnFail { get { return OnFailedLoadingAsset; } set { OnFailedLoadingAsset = value; } }
+        public Action<string> OnFail { get { return OnFailedLoadingAsset; } set { OnFailedLoadingAsset = value; } }
 
         public void Initialize(IWebRequestController webRequestController) { this.webRequestController = webRequestController; }
 
@@ -170,7 +170,7 @@ namespace UnityGLTF
 
             DecrementDownloadCount();
 
-            OnFailedLoadingAsset?.Invoke();
+            OnFailedLoadingAsset?.Invoke(obj.Message);
 
             if (obj != null)
             {
@@ -339,7 +339,7 @@ namespace UnityGLTF
                     if ( state == State.COMPLETED )
                         OnFinishedLoadingAsset?.Invoke();
                     else
-                        OnFailedLoadingAsset?.Invoke();
+                        OnFailedLoadingAsset?.Invoke("state is not complete");
 
                     Destroy(loadingPlaceholder);
                     Destroy(this);

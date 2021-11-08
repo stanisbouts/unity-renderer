@@ -19,7 +19,7 @@ namespace DCL
         {
         }
 
-        protected override void OnLoad(Action OnSuccess, Action OnFail)
+        protected override void OnLoad(Action OnSuccess, Action<string> OnFail)
         {
             loadingCoroutine = CoroutineStarter.Start(LoadingCoroutine(OnSuccess, OnFail));
         }
@@ -88,7 +88,7 @@ namespace DCL
                 return $"subPromise == null? state = {state}";
         }
 
-        public IEnumerator LoadingCoroutine(Action OnSuccess, Action OnFail)
+        public IEnumerator LoadingCoroutine(Action OnSuccess, Action<string> OnFail)
         {
             subPromise = new AssetPromise_AB(contentUrl, hash, asset.container.transform);
             bool success = false;
@@ -112,7 +112,7 @@ namespace DCL
             }
             else
             {
-                OnFail?.Invoke();
+                OnFail?.Invoke("container or asset is null");
             }
         }
 

@@ -133,12 +133,13 @@ namespace DCL
             }
             else
             {
-                OnLoadFailure();
+                OnLoadFailure("Alredy on library");
             }
         }
 
-        protected void OnLoadFailure()
+        protected void OnLoadFailure(string reason)
         {
+            Debug.Log($"Asset failed to load becasue: {reason}");
             CallAndClearEvents(isSuccess: false);
             Cleanup();
         }
@@ -181,7 +182,7 @@ namespace DCL
         }
 
         protected abstract void OnCancelLoading();
-        protected abstract void OnLoad(Action OnSuccess, Action OnFail);
+        protected abstract void OnLoad(Action OnSuccess, Action<string> OnFail);
         protected abstract void OnBeforeLoadOrReuse();
         protected abstract void OnAfterLoadOrReuse();
         public abstract object GetId();

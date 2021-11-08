@@ -70,7 +70,7 @@ namespace DCL
 
         public override object GetId() { return id; }
 
-        protected override void OnLoad(Action OnSuccess, Action OnFail)
+        protected override void OnLoad(Action OnSuccess, Action<string> OnFail)
         {
             gltfComponent = asset.container.AddComponent<GLTFComponent>();
             gltfComponent.Initialize(webRequestController);

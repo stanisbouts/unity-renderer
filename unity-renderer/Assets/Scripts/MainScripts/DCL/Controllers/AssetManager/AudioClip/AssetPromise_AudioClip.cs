@@ -23,11 +23,11 @@ namespace DCL
             this.webRequestController = webRequestController;
         }
 
-        protected override void OnLoad(Action OnSuccess, Action OnFail)
+        protected override void OnLoad(Action OnSuccess, Action<string> OnFail)
         {
             if (string.IsNullOrEmpty(url))
             {
-                OnFail?.Invoke();
+                OnFail?.Invoke("null url");
                 return;
             }
 
@@ -39,7 +39,7 @@ namespace DCL
                 },
                 request =>
                 {
-                    OnFail?.Invoke();
+                    OnFail?.Invoke(request.error);
                 });
         }
 

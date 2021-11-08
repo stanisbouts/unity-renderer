@@ -84,13 +84,13 @@ namespace DCL
 
         protected override void OnBeforeLoadOrReuse() { }
 
-        protected IEnumerator LoadAssetBundleWithDeps(string baseUrl, string hash, Action OnSuccess, Action OnFail)
+        protected IEnumerator LoadAssetBundleWithDeps(string baseUrl, string hash, Action OnSuccess, Action<string> OnFail)
         {
             string finalUrl = baseUrl + hash;
 
             if (failedRequestUrls.Contains(finalUrl))
             {
-                OnFail?.Invoke();
+                OnFail?.Invoke("url already failed");
                 yield break;
             }
 
@@ -127,7 +127,7 @@ namespace DCL
 
             if (asyncOp.isDisposed)
             {
-                OnFail?.Invoke();
+                OnFail?.Invoke("it was disposed");
                 yield break;
             }
 
@@ -136,7 +136,7 @@ namespace DCL
                 if (VERBOSE)
                     Debug.Log($"Request failed? {asyncOp.webRequest.error} ... {finalUrl}");
                 failedRequestUrls.Add(finalUrl);
-                OnFail?.Invoke();
+                OnFail?.Invoke($"did not succeed -> {asyncOp.webRequest.error}");
                 asyncOp.Dispose();
                 yield break;
             }
@@ -153,7 +153,7 @@ namespace DCL
 
             if (assetBundle == null || asset == null)
             {
-                OnFail?.Invoke();
+                OnFail?.Invoke("asset is null");
 
                 failedRequestUrls.Add(finalUrl);
                 yield break;
@@ -189,7 +189,7 @@ namespace DCL
             return result;
         }
 
-        protected override void OnLoad(Action OnSuccess, Action OnFail) { loadCoroutine = CoroutineStarter.Start(LoadAssetBundleWithDeps(contentUrl, hash, OnSuccess, OnFail)); }
+        protected override void OnLoad(Action OnSuccess, Action<string> OnFail) { loadCoroutine = CoroutineStarter.Start(LoadAssetBundleWithDeps(contentUrl, hash, OnSuccess, OnFail)); }
 
         IEnumerator WaitForConcurrentRequestsSlot()
         {
