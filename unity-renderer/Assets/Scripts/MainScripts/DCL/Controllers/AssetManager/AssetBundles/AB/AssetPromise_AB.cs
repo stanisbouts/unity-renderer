@@ -189,7 +189,7 @@ namespace DCL
         {
             string result = $"AB request... loadCoroutine = {loadCoroutine} ... state = {state}\n";
 
-            if (asyncOp.webRequest != null)
+            if (asyncOp != null && asyncOp.webRequest != null)
                 result +=
                     $"url = {asyncOp.webRequest.url} ... code = {asyncOp.webRequest.responseCode} ... progress = {asyncOp.webRequest.downloadProgress}\n";
             else

@@ -3,6 +3,7 @@ using DCL.Components;
 using DCL.Controllers;
 using DCL.Helpers;
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.Serialization;
 
 namespace DCL
@@ -65,10 +66,7 @@ namespace DCL
                 Environment.i.platform.cullingController.SetAnimationCulling(false);
         }
 
-        protected virtual void SetupPlugins()
-        {
-            pluginSystem = PluginSystemFactory.Create();
-        }
+        protected virtual void SetupPlugins() { pluginSystem = PluginSystemFactory.Create(); }
 
         protected virtual void SetupEnvironment()
         {
@@ -108,21 +106,38 @@ namespace DCL
             performanceMetricsController?.Update();
         }
 
-        protected virtual void LateUpdate()
-        {
-            Environment.i.world.sceneController.LateUpdate();
-        }
+        protected virtual void LateUpdate() { Environment.i.world.sceneController.LateUpdate(); }
 
         protected virtual void OnDestroy()
         {
             DataStore.i.common.isWorldBeingDestroyed.Set(true);
-            
+
+            CoroutineStarter.StopAll();
+
             pluginSystem?.Dispose();
 
             if (!Configuration.EnvironmentSettings.RUNNING_TESTS)
                 Environment.Dispose();
-            
+
             kernelCommunication?.Dispose();
+
+            DataStore.Clear();
+            if (PoolManager.i != null)
+                PoolManager.i.Dispose();
+
+
+            if (MapRenderer.i != null)
+                MapRenderer.i.Cleanup();
+
+            CatalogController.Clear();
+
+            AssetPromiseKeeper_GLTF.i?.Cleanup();
+            AssetPromiseKeeper_AB_GameObject.i?.Cleanup();
+            AssetPromiseKeeper_AB.i?.Cleanup();
+
+            bool wasCacheCleared = Caching.ClearCache();
+            Debug.Log($"Cache clear was: {wasCacheCleared}");
+            Resources.UnloadUnusedAssets();
         }
 
         protected virtual void InitializeSceneDependencies()
