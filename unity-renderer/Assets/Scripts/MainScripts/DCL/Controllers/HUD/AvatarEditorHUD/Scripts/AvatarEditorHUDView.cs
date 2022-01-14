@@ -95,6 +95,15 @@ public class AvatarEditorHUDView : MonoBehaviour
     [SerializeField]
     internal Button noWeb3GoToMarketplaceButton;
 
+    [Header("Skins")]
+    [SerializeField] internal GameObject skinsWeb3Container;
+
+    [SerializeField] internal GameObject skinsMissingWeb3Container;
+    
+    [SerializeField] internal Button skinsGoToMarketplaceButton;
+    
+    [SerializeField] internal Button skinsConnectWalletButton;
+
     internal static CharacterPreviewController characterPreviewController;
     private AvatarEditorHUDController controller;
     internal readonly Dictionary<string, ItemSelector> selectorsByCategory = new Dictionary<string, ItemSelector>();
@@ -137,8 +146,12 @@ public class AvatarEditorHUDView : MonoBehaviour
 
         web3GoToMarketplaceButton.onClick.RemoveAllListeners();
         noWeb3GoToMarketplaceButton.onClick.RemoveAllListeners();
-        web3GoToMarketplaceButton.onClick.AddListener(controller.GoToMarketplace);
-        noWeb3GoToMarketplaceButton.onClick.AddListener(controller.GoToMarketplace);
+        skinsGoToMarketplaceButton.onClick.RemoveAllListeners();
+        skinsConnectWalletButton.onClick.RemoveAllListeners();
+        web3GoToMarketplaceButton.onClick.AddListener(controller.GoToMarketplaceOrConnectWallet);
+        noWeb3GoToMarketplaceButton.onClick.AddListener(controller.GoToMarketplaceOrConnectWallet);
+        skinsGoToMarketplaceButton.onClick.AddListener(controller.GoToMarketplaceOrConnectWallet);
+        skinsConnectWalletButton.onClick.AddListener(controller.GoToMarketplaceOrConnectWallet);
 
         characterPreviewController.camera.enabled = false;
     }
@@ -147,6 +160,8 @@ public class AvatarEditorHUDView : MonoBehaviour
     {
         web3Container.SetActive(isWeb3User);
         noWeb3Container.SetActive(!isWeb3User);
+        skinsWeb3Container.SetActive(isWeb3User);
+        skinsMissingWeb3Container.SetActive(!isWeb3User);
     }
 
     private void InitializeNavigationEvents()

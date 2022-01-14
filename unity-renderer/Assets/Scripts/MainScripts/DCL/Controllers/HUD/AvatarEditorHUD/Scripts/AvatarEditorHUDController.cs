@@ -282,6 +282,21 @@ public class AvatarEditorHUDController : IHUD
         CatalogController.wearableCatalog.TryGetValue(wearableId, out var wearable);
         if (wearable == null)
             return;
+        
+        var toReplace = GetWearablesReplacedBy(wearable);
+        var isTryingToReplaceSmartWearable = toReplace.Any(wearable => wearable.IsSmart());
+        if (isTryingToReplaceSmartWearable)
+        {
+            // TODO: show popup saying that you cannot replace a smart wearable
+            return;
+        }
+
+        var isGoingToReplaceSkin = model.wearables.Any(item => item.IsSkin());
+        if (isGoingToReplaceSkin)
+        {
+            // TODO: show popup you are going to replace skin
+            return;
+        }
 
         if (wearable.data.category == Categories.BODY_SHAPE)
         {
@@ -416,6 +431,7 @@ public class AvatarEditorHUDController : IHUD
         if (wearablesByCategory[wearable.data.category].Contains(wearable) && wearable.SupportsBodyShape(model.bodyShape.id) && !model.wearables.Contains(wearable))
         {
             var toReplace = GetWearablesReplacedBy(wearable);
+            
             toReplace.ForEach(UnequipWearable);
             model.wearables.Add(wearable);
             view.EquipWearable(wearable);
@@ -531,6 +547,12 @@ public class AvatarEditorHUDController : IHUD
             var wearable = model.wearables[i];
             if (wearable == null)
                 continue;
+
+            if (wearable.IsSkin())
+            {
+                wearablesToReplace.Add(wearable);
+                continue;
+            }
 
             if (categoriesToReplace.Contains(wearable.data.category))
             {
@@ -669,7 +691,7 @@ public class AvatarEditorHUDController : IHUD
         SetVisibility(false);
     }
 
-    public void GoToMarketplace()
+    public void GoToMarketplaceOrConnectWallet()
     {
         if (userProfile.hasConnectedWeb3)
             WebInterface.OpenURL(URL_MARKET_PLACE);

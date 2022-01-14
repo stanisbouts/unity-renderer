@@ -131,6 +131,8 @@ public class WearableItem
 
     public bool IsCollectible() { return !string.IsNullOrEmpty(rarity); }
 
+    public bool IsSkin() => data.category == "skin";
+
     public bool IsSmart()
     {
         if (data?.representations == null) return false;
