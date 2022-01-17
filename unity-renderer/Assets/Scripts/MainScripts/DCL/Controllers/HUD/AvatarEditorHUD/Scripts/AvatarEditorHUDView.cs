@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
@@ -91,6 +92,8 @@ public class AvatarEditorHUDView : MonoBehaviour
 
     [SerializeField]
     internal GameObject noWeb3Container;
+    
+    [SerializeField] internal UserContextConfirmationDialog smartItemReplacementConfirmationDialog;
 
     [SerializeField]
     internal Button noWeb3GoToMarketplaceButton;
@@ -103,6 +106,8 @@ public class AvatarEditorHUDView : MonoBehaviour
     [SerializeField] internal Button skinsGoToMarketplaceButton;
     
     [SerializeField] internal Button skinsConnectWalletButton;
+
+    [SerializeField] internal UserContextConfirmationDialog skinReplacementConfirmationDialog;
 
     internal static CharacterPreviewController characterPreviewController;
     private AvatarEditorHUDController controller;
@@ -463,5 +468,30 @@ public class AvatarEditorHUDView : MonoBehaviour
         rectTransform.localPosition = Vector2.zero;
         rectTransform.offsetMax = new Vector2(0f, 50f);
         rectTransform.offsetMin = Vector2.zero;
+    }
+
+    public void ShowReplaceSmartItemConfirmationPopup(Action<bool> confirmationCallback)
+    {
+        ShowConfirmationPopup(smartItemReplacementConfirmationDialog, confirmationCallback);
+    }
+
+    public void ShowReplaceSkinConfirmationPopup(Action<bool> confirmationCallback)
+    {
+        ShowConfirmationPopup(skinReplacementConfirmationDialog, confirmationCallback);
+    }
+
+    private void ShowConfirmationPopup(UserContextConfirmationDialog dialog,
+        Action<bool> confirmationCallback)
+    {
+        dialog.Show(() =>
+            {
+                confirmationCallback.Invoke(true);
+                dialog.Hide();
+            },
+            () =>
+            {
+                confirmationCallback.Invoke(false);
+                dialog.Hide();
+            });
     }
 }

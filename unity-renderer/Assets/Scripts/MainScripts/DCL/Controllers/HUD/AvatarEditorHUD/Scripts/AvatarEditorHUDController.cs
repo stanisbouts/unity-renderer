@@ -280,23 +280,7 @@ public class AvatarEditorHUDController : IHUD
     public void WearableClicked(string wearableId)
     {
         CatalogController.wearableCatalog.TryGetValue(wearableId, out var wearable);
-        if (wearable == null)
-            return;
-        
-        var toReplace = GetWearablesReplacedBy(wearable);
-        var isTryingToReplaceSmartWearable = toReplace.Any(wearable => wearable.IsSmart());
-        if (isTryingToReplaceSmartWearable)
-        {
-            // TODO: show popup saying that you cannot replace a smart wearable
-            return;
-        }
-
-        var isGoingToReplaceSkin = model.wearables.Any(item => item.IsSkin());
-        if (isGoingToReplaceSkin)
-        {
-            // TODO: show popup you are going to replace skin
-            return;
-        }
+        if (wearable == null) return;
 
         if (wearable.data.category == Categories.BODY_SHAPE)
         {
@@ -319,13 +303,49 @@ public class AvatarEditorHUDController : IHUD
             }
             else
             {
-                var sameCategoryEquipped = model.wearables.FirstOrDefault(x => x.data.category == wearable.data.category);
-                if (sameCategoryEquipped != null)
+                void Equip()
                 {
-                    UnequipWearable(sameCategoryEquipped);
+                    var sameCategoryEquipped = model.GetWearable(wearable.data.category);
+                    if (sameCategoryEquipped != null)
+                    {
+                        UnequipWearable(sameCategoryEquipped);
+                    }
+
+                    EquipWearable(wearable);
+                };
+
+                var isSameCategoryEquippedSmart = model.GetWearable(wearable.data.category)
+                    ?.IsSmart() ?? false;
+                var isTryingToReplaceSmartWearable = isSameCategoryEquippedSmart
+                    || GetWearablesReplacedBy(wearable).Any(w => w.IsSmart());
+                if (isTryingToReplaceSmartWearable)
+                {
+                    view.ShowReplaceSmartItemConfirmationPopup(accepted =>
+                    {
+                        if (accepted)
+                        {
+                            Equip();
+                            UpdateAvatarPreview();
+                        }
+                    });
+                    return;
                 }
 
-                EquipWearable(wearable);
+                var isGoingToReplaceSkin = model.wearables.Any(item => item.IsSkin());
+                if (isGoingToReplaceSkin)
+                {
+                    view.ShowReplaceSkinConfirmationPopup(accepted =>
+                    {
+                        if (accepted)
+                        {
+                            Equip();
+                            UpdateAvatarPreview();
+                        }
+                    });
+                    return;
+                }
+
+                Equip();
             }
         }
 
@@ -431,7 +451,6 @@ public class AvatarEditorHUDController : IHUD
         if (wearablesByCategory[wearable.data.category].Contains(wearable) && wearable.SupportsBodyShape(model.bodyShape.id) && !model.wearables.Contains(wearable))
         {
             var toReplace = GetWearablesReplacedBy(wearable);
-            
             toReplace.ForEach(UnequipWearable);
             model.wearables.Add(wearable);
             view.EquipWearable(wearable);
