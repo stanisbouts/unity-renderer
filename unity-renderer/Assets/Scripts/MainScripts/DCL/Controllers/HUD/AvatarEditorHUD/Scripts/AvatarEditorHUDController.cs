@@ -314,11 +314,7 @@ public class AvatarEditorHUDController : IHUD
                     EquipWearable(wearable);
                 };
 
-                var isSameCategoryEquippedSmart = model.GetWearable(wearable.data.category)
-                    ?.IsSmart() ?? false;
-                var isTryingToReplaceSmartWearable = isSameCategoryEquippedSmart
-                    || GetWearablesReplacedBy(wearable).Any(w => w.IsSmart());
-                if (isTryingToReplaceSmartWearable)
+                if (IsTryingToHideSmartItem(wearable))
                 {
                     view.ShowReplaceSmartItemConfirmationPopup(accepted =>
                     {
@@ -338,6 +334,7 @@ public class AvatarEditorHUDController : IHUD
                     {
                         if (accepted)
                         {
+                            UnequipWearable(model.GetWearable(Categories.SKIN));
                             Equip();
                             UpdateAvatarPreview();
                         }
@@ -350,6 +347,16 @@ public class AvatarEditorHUDController : IHUD
         }
 
         UpdateAvatarPreview();
+    }
+
+    private bool IsTryingToHideSmartItem(WearableItem wearable)
+    {
+        var categoriesThatWillHide = wearable.GetHidesList(model.bodyShape.id);
+        var hidesAnSmartItem = model.wearables.Any(w => w.IsSmart()
+                                                        && categoriesThatWillHide.Contains(w.data.category));
+        var hasSmartEquippedForSameCategory = model.GetWearable(wearable.data.category)
+            ?.IsSmart() ?? false;
+        return hasSmartEquippedForSameCategory | hidesAnSmartItem;
     }
 
     public void HairColorClicked(Color color)
@@ -566,12 +573,6 @@ public class AvatarEditorHUDController : IHUD
             var wearable = model.wearables[i];
             if (wearable == null)
                 continue;
-
-            if (wearable.IsSkin())
-            {
-                wearablesToReplace.Add(wearable);
-                continue;
-            }
 
             if (categoriesToReplace.Contains(wearable.data.category))
             {
