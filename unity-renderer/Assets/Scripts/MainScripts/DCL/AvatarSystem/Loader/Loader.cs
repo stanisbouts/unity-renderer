@@ -89,8 +89,10 @@ namespace AvatarSystem
 
                     throw new Exception($"Couldnt load (nor fallback) wearables with required category: {string.Join(", ", failedWearables)}");
                 }
+                //TODO move this to the DI
+                BonesRetargeter retargeter = new BonesRetargeter();
+                retargeter.Retarget(loaders.Values.SelectMany(x => x.rendereable.renderers).OfType<SkinnedMeshRenderer>(), bodyshapeLoader.upperBodyRenderer);
 
-                AvatarSystemUtils.CopyBones(bodyshapeLoader.upperBodyRenderer, loaders.Values.SelectMany(x => x.rendereable.renderers).OfType<SkinnedMeshRenderer>());
                 (bool headVisible, bool upperBodyVisible, bool lowerBodyVisible, bool feetVisible) = AvatarSystemUtils.GetActiveBodyParts(bodyshape.id, wearables);
 
                 var activeBodyParts = AvatarSystemUtils.GetActiveBodyPartsRenderers(bodyshapeLoader, headVisible, upperBodyVisible, lowerBodyVisible, feetVisible);
