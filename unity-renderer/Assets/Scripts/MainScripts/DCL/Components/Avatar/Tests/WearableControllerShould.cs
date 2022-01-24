@@ -81,7 +81,7 @@ namespace AvatarShape_Tests
             Assert.IsFalse(succeeded);
             Assert.IsTrue(failed);
 
-            LogAssert.Expect(LogType.Exception, new Regex(".+"));
+            LogAssert.Expect(LogType.Exception, new Regex(@"^.*?Failed to Load Json Stream"));
         }
 
         [UnityTest]
