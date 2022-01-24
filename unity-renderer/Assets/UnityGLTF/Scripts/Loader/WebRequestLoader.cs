@@ -81,11 +81,7 @@ namespace UnityGLTF.Loader
 
             Assert.IsNotNull(asyncOp, "asyncOp == null ... Maybe you are using a mocked WebRequestController?");
 
-            await TaskUtils.Run( async () =>
-            {
-                while (asyncOp.keepWaiting && !asyncOp.isDone && !asyncOp.isDisposed)
-                    await UniTask.WaitForEndOfFrame();
-            }, cancellationToken: token);
+            await TaskUtils.WaitWebRequest(asyncOp, token);
             
             token.ThrowIfCancellationRequested();
             
