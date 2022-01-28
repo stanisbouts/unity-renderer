@@ -125,15 +125,30 @@ public class WearableItem
     {
         var representation = GetRepresentation(bodyShapeType);
 
-        if (IsSkin())
-            return WearableLiterals.Categories.ALL
-                .Where(category => category != data.category)
-                .ToArray();
+        string[] hides;
 
         if (representation?.overrideHides == null || representation.overrideHides.Length == 0)
-            return data.hides;
+            hides = data.hides;
+        else
+            hides = representation.overrideHides;
 
-        return representation.overrideHides;
+        if (IsSkin())
+        {
+            hides = hides.Concat(new[]
+            {
+                WearableLiterals.Categories.EYES,
+                WearableLiterals.Categories.HAIR,
+                WearableLiterals.Categories.MOUTH,
+                WearableLiterals.Categories.EYEBROWS,
+                WearableLiterals.Categories.UPPER_BODY,
+                WearableLiterals.Categories.LOWER_BODY,
+                WearableLiterals.Categories.FEET,
+                WearableLiterals.Misc.HEAD,
+                WearableLiterals.Categories.FACIAL_HAIR
+            }).Distinct().ToArray();
+        }
+
+        return hides;
     }
 
     public bool IsCollectible()
@@ -200,7 +215,7 @@ public class WearableItem
             var wearableItem = wearables[i];
 
             if (result.Contains(wearableItem.data.category)
-            ) //Skip hidden elements to avoid two elements hiding each other
+               ) //Skip hidden elements to avoid two elements hiding each other
                 continue;
 
             var wearableHidesList = wearableItem.GetHidesList(bodyShapeId);
