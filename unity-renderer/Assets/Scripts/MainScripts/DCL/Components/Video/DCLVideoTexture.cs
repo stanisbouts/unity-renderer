@@ -7,6 +7,7 @@ using DCL.Components.Video.Plugin;
 using DCL.Helpers;
 using DCL.Interface;
 using DCL.SettingsCommon;
+using UnityEngine.Assertions;
 using AudioSettings = DCL.SettingsCommon.AudioSettings;
 
 namespace DCL.Components
@@ -47,7 +48,7 @@ namespace DCL.Components
         private float currUpdateIntervalTime = OUTOFSCENE_TEX_UPDATE_INTERVAL_IN_SECONDS;
         private float lastVideoProgressReportTime;
 
-        internal Dictionary<string, MaterialInfo> attachedMaterials = new Dictionary<string, MaterialInfo>();
+        internal Dictionary<string, ITextureAttachment> attachedMaterials = new Dictionary<string, ITextureAttachment>();
         private string lastVideoClipID;
         private VideoState previousVideoState;
 
@@ -152,6 +153,7 @@ namespace DCL.Components
                 texturePlayer.SetLoop(model.loop);
             }
         }
+
         private void Initialize(DCLVideoClip dclVideoClip)
         {
             string videoId = (!string.IsNullOrEmpty(scene.sceneData.id)) ? scene.sceneData.id + id : scene.GetHashCode().ToString() + id;
@@ -317,82 +319,40 @@ namespace DCL.Components
 
         private void OnSceneIDChanged(string current, string previous) { isPlayerInScene = IsPlayerInSameSceneAsComponent(current); }
 
-        public override void AttachTo(PBRMaterial material)
+        public override void AttachTo(ITextureAttachment attachment)
         {
-            base.AttachTo(material);
-            AttachToMaterial(material);
+            Assert.IsTrue( attachment != null, "Attachment must not be null!");
+
+            if (attachedMaterials.ContainsKey(attachment.GetId()))
+                return;
+
+            AddRefCount();
+            isPlayStateDirty = true;
+            attachedMaterials.Add(attachment.GetId(), attachment);
+            attachment.OnAttach += OnAttachmentAttach;
+            attachment.OnDetach += OnAttachmentDetach;
+            attachment.OnUpdate += OnAttachmentUpdate;
         }
 
-        public override void DetachFrom(PBRMaterial material)
+        public override void DetachFrom(ITextureAttachment attachment)
         {
-            base.DetachFrom(material);
-            DetachFromMaterial(material);
-        }
+            Assert.IsTrue( attachment != null, "Attachment must not be null!");
 
-        public override void AttachTo(BasicMaterial material)
-        {
-            base.AttachTo(material);
-            AttachToMaterial(material);
-        }
+            // When detaching, we only use the ID because we want to reuse the original attachment instance.
+            string attachmentId = attachment.GetId();
 
-        public override void DetachFrom(BasicMaterial material)
-        {
-            base.DetachFrom(material);
-            DetachFromMaterial(material);
-        }
+            if (!attachedMaterials.ContainsKey(attachmentId))
+                return;
 
-        private void AttachToMaterial(BaseDisposable baseDisposable)
-        {
-            if (!attachedMaterials.ContainsKey(baseDisposable.id))
-            {
-                attachedMaterials.Add(baseDisposable.id, new MaterialComponent(baseDisposable));
-                baseDisposable.OnAttach += OnEntityAttachedMaterial;
-                baseDisposable.OnDetach += OnEntityDetachedMaterial;
-                isPlayStateDirty = true;
+            ITextureAttachment cachedAttachment = attachedMaterials[attachmentId];
 
-                if (baseDisposable.attachedEntities.Count > 0)
-                {
-                    using (var iterator = baseDisposable.attachedEntities.GetEnumerator())
-                    {
-                        while (iterator.MoveNext())
-                        {
-                            var entity = iterator.Current;
-                            entity.OnShapeUpdated -= OnEntityShapeUpdated;
-                            entity.OnShapeUpdated += OnEntityShapeUpdated;
-                        }
-                    }
-                }
-            }
-        }
-
-        private void DetachFromMaterial(BaseDisposable baseDisposable)
-        {
-            if (attachedMaterials.ContainsKey(baseDisposable.id))
-            {
-                attachedMaterials.Remove(baseDisposable.id);
-                baseDisposable.OnAttach -= OnEntityAttachedMaterial;
-                baseDisposable.OnDetach -= OnEntityDetachedMaterial;
-                isPlayStateDirty = true;
-            }
-        }
-
-        // TODO: we will need an event for visibility change on UI for supporting video
-        public override void AttachTo(UIImage image)
-        {
-            if (!attachedMaterials.ContainsKey(image.id))
-            {
-                attachedMaterials.Add(image.id, new UIShapeComponent(image));
-                isPlayStateDirty = true;
-            }
-        }
-
-        public override void DetachFrom(UIImage image)
-        {
-            if (attachedMaterials.ContainsKey(image.id))
-            {
-                attachedMaterials.Remove(image.id);
-                isPlayStateDirty = true;
-            }
+            attachedMaterials.Remove(attachmentId);
+            cachedAttachment.OnAttach -= OnAttachmentAttach;
+            cachedAttachment.OnDetach -= OnAttachmentDetach;
+            cachedAttachment.OnUpdate -= OnAttachmentUpdate;
+            cachedAttachment.Dispose();
+            RemoveRefCount();
+            isPlayStateDirty = true;
         }
 
         void OnEntityRemoved(IDCLEntity entity) { isPlayStateDirty = true; }
@@ -424,109 +384,20 @@ namespace DCL.Components
             base.Dispose();
         }
 
-        private void OnEntityAttachedMaterial(IDCLEntity entity) { entity.OnShapeUpdated += OnEntityShapeUpdated; }
+        private void OnAttachmentAttach(ITextureAttachment attachment)
+        {
+            attachment.OnUpdate -= OnAttachmentUpdate;
+            attachment.OnUpdate += OnAttachmentUpdate;
+        }
 
-        private void OnEntityDetachedMaterial(IDCLEntity entity)
+        private void OnAttachmentDetach(ITextureAttachment attachment)
         {
             if (texturePlayer != null)
                 texturePlayer.Pause();
 
-            entity.OnShapeUpdated -= OnEntityShapeUpdated;
+            attachment.OnUpdate -= OnAttachmentUpdate;
         }
 
-        private void OnEntityShapeUpdated(IDCLEntity entity) { isPlayStateDirty = true; }
-
-        internal interface MaterialInfo
-        {
-            float GetClosestDistanceSqr(Vector3 fromPosition);
-            bool IsVisible();
-        }
-
-        struct MaterialComponent : MaterialInfo
-        {
-            BaseDisposable component;
-
-            float MaterialInfo.GetClosestDistanceSqr(Vector3 fromPosition)
-            {
-                float dist = int.MaxValue;
-                if (component.attachedEntities.Count > 0)
-                {
-                    using (var iterator = component.attachedEntities.GetEnumerator())
-                    {
-                        while (iterator.MoveNext())
-                        {
-                            var entity = iterator.Current;
-                            if (IsEntityVisible(entity))
-                            {
-                                var entityDist = (entity.meshRootGameObject.transform.position - fromPosition).sqrMagnitude;
-                                if (entityDist < dist)
-                                    dist = entityDist;
-                            }
-                        }
-                    }
-                }
-
-                return dist;
-            }
-
-            bool MaterialInfo.IsVisible()
-            {
-                if (component.attachedEntities.Count > 0)
-                {
-                    using (var iterator = component.attachedEntities.GetEnumerator())
-                    {
-                        while (iterator.MoveNext())
-                        {
-                            if (IsEntityVisible(iterator.Current))
-                            {
-                                return true;
-                            }
-                        }
-                    }
-                }
-
-                return false;
-            }
-
-            bool IsEntityVisible(IDCLEntity entity)
-            {
-                if (entity.meshesInfo == null)
-                    return false;
-                if (entity.meshesInfo.currentShape == null)
-                    return false;
-                return entity.meshesInfo.currentShape.IsVisible();
-            }
-
-            public MaterialComponent(BaseDisposable component) { this.component = component; }
-        }
-
-        struct UIShapeComponent : MaterialInfo
-        {
-            UIShape shape;
-
-            float MaterialInfo.GetClosestDistanceSqr(Vector3 fromPosition) { return 0; }
-
-            bool MaterialInfo.IsVisible()
-            {
-                if (!((UIShape.Model) shape.GetModel()).visible)
-                    return false;
-                return IsParentVisible(shape);
-            }
-
-            bool IsParentVisible(UIShape shape)
-            {
-                UIShape parent = shape.parentUIComponent;
-                if (parent == null)
-                    return true;
-                if (parent.referencesContainer.canvasGroup.alpha == 0)
-                {
-                    return false;
-                }
-
-                return IsParentVisible(parent);
-            }
-
-            public UIShapeComponent(UIShape image) { shape = image; }
-        }
+        private void OnAttachmentUpdate(ITextureAttachment attachment) { isPlayStateDirty = true; }
     }
 }

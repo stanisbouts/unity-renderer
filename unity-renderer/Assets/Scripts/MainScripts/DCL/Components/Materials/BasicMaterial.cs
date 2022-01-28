@@ -28,6 +28,8 @@ namespace DCL.Components
 
         private DCLTexture dclTexture = null;
 
+        private ComponentTextureAttachment baseMapTextureAttachment = null;
+
         private static readonly int _BaseMap = Shader.PropertyToID("_BaseMap");
         private static readonly int _AlphaClip = Shader.PropertyToID("_AlphaClip");
         private static readonly int _Cutoff = Shader.PropertyToID("_Cutoff");
@@ -74,17 +76,17 @@ namespace DCL.Components
                 {
                     yield return DCLTexture.FetchTextureComponent(scene, model.texture, (downloadedTexture) =>
                     {
-                        dclTexture?.DetachFrom(this);
+                        dclTexture?.DetachFrom(baseMapTextureAttachment);
                         material.SetTexture(_BaseMap, downloadedTexture.texture);
                         dclTexture = downloadedTexture;
-                        dclTexture.AttachTo(this);
+                        dclTexture.AttachTo(baseMapTextureAttachment);
                     });
                 }
             }
             else
             {
                 material.mainTexture = null;
-                dclTexture?.DetachFrom(this);
+                dclTexture?.DetachFrom(baseMapTextureAttachment);
                 dclTexture = null;
             }
 
@@ -163,10 +165,8 @@ namespace DCL.Components
 
         public override void Dispose()
         {
-            dclTexture?.DetachFrom(this);
-
+            dclTexture?.DetachFrom(baseMapTextureAttachment);
             Object.Destroy(material);
-
             base.Dispose();
         }
     }

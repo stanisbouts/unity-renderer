@@ -147,19 +147,17 @@ namespace DCL
             }
         }
 
+        public virtual void AttachTo(ITextureAttachment attachment = null)
+        {
+            AddRefCount();
+        }
+
+        public virtual void DetachFrom(ITextureAttachment attachment = null)
+        {
+            RemoveRefCount();
+        }
+
         protected int refCount;
-
-        public virtual void AttachTo(PBRMaterial material) { AddRefCount(); }
-
-        public virtual void AttachTo(BasicMaterial material) { AddRefCount(); }
-
-        public virtual void AttachTo(UIImage image) { AddRefCount(); }
-
-        public virtual void DetachFrom(PBRMaterial material) { RemoveRefCount(); }
-
-        public virtual void DetachFrom(BasicMaterial material) { RemoveRefCount(); }
-
-        public virtual void DetachFrom(UIImage image) { RemoveRefCount(); }
 
         public void AddRefCount() { refCount++; }
 
