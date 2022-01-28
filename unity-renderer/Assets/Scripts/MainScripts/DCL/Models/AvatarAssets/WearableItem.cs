@@ -151,6 +151,8 @@ public class WearableItem
         return hides;
     }
 
+    public bool DoesHide(string category, string bodyShape) => GetHidesList(bodyShape).Any(s => s == category);
+
     public bool IsCollectible()
     {
         return !string.IsNullOrEmpty(rarity);

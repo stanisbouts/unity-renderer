@@ -327,8 +327,7 @@ public class AvatarEditorHUDController : IHUD
                     return;
                 }
 
-                var isGoingToReplaceSkin = model.wearables.Any(item => item.IsSkin());
-                if (isGoingToReplaceSkin)
+                if (IsTryingToReplaceSkin(wearable))
                 {
                     view.ShowReplaceSkinConfirmationPopup(accepted =>
                     {
@@ -347,6 +346,15 @@ public class AvatarEditorHUDController : IHUD
         }
 
         UpdateAvatarPreview();
+    }
+
+    private bool IsTryingToReplaceSkin(WearableItem wearable)
+    {
+        return model.wearables.Any(skin =>
+        {
+            return skin.IsSkin()
+                   && skin.DoesHide(wearable.data.category, model.bodyShape.id);
+        });
     }
 
     private bool IsTryingToHideSmartItem(WearableItem wearable)
