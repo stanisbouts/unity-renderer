@@ -7,6 +7,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using DCL.Components;
 using Newtonsoft.Json;
 using UnityEngine;
@@ -22,11 +24,14 @@ namespace DCL
 
         //TODO(Brian): Move to WorldRuntimePlugin later
         private LoadingFeedbackController loadingFeedbackController;
-
         private Coroutine deferredDecodingCoroutine;
+
+        private CancellationTokenSource tokenSource;
+        private IMessagingControllersManager messagingControllersManager => Environment.i.messaging.manager;
 
         public void Initialize()
         {
+            tokenSource = new CancellationTokenSource();
             sceneSortDirty = true;
             positionDirty = true;
             lastSortFrame = 0;
@@ -81,6 +86,8 @@ namespace DCL
 
         public void Dispose()
         {
+            tokenSource.Cancel();
+            tokenSource.Dispose();
             loadingFeedbackController.Dispose();
 
             DCL.Environment.i.platform.updateEventHandler.RemoveListener(IUpdateEventHandler.EventType.Update, Update);
@@ -255,6 +262,7 @@ namespace DCL
                         {
                             if (msgPayload is Protocol.SharedComponentDispose payload)
                                 scene.SharedComponentDispose(payload.id);
+
                             break;
                         }
 
@@ -270,12 +278,14 @@ namespace DCL
                         {
                             if (msgPayload is Protocol.RemoveEntity payload)
                                 scene.RemoveEntity(payload.entityId);
+
                             break;
                         }
 
                     case MessagingTypes.INIT_DONE:
                         {
                             scene.sceneLifecycleHandler.SetInitMessagesDone();
+
                             break;
                         }
 
@@ -283,6 +293,7 @@ namespace DCL
                         {
                             if (msgPayload is QueryMessage queryMessage)
                                 ParseQuery(queryMessage.payload, scene.sceneData.id);
+
                             break;
                         }
 
@@ -290,6 +301,7 @@ namespace DCL
                         {
                             if (msgPayload is Protocol.OpenExternalUrl payload)
                                 OnOpenExternalUrlRequest?.Invoke(scene, payload.url);
+
                             break;
                         }
 
@@ -298,11 +310,13 @@ namespace DCL
                             if (msgPayload is Protocol.OpenNftDialog payload)
                                 DataStore.i.common.onOpenNFTPrompt.Set(new NFTPromptModel(payload.contactAddress, payload.tokenId,
                                     payload.comment), true);
+
                             break;
                         }
 
                     default:
                         Debug.LogError($"Unknown method {method}");
+
                         break;
                 }
             }
@@ -333,52 +347,80 @@ namespace DCL
             PhysicsCast.i.Query(raycastQuery);
         }
 
-        public void SendSceneMessage(string payload) { SendSceneMessage(payload, deferredMessagesDecoding); }
-
-        private void SendSceneMessage(string payload, bool enqueue)
+        public void SendSceneMessage(string payload)
         {
-            string[] chunks = payload.Split(new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            SendSceneMessage(payload, deferredMessagesDecoding).Forget();
+        }
+
+        private async UniTaskVoid SendSceneMessage(string payload, bool enqueue)
+        {
+            string[] chunks = payload.Split(new [] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            bool renderState = CommonScriptableObjects.rendererState.Get();
             int count = chunks.Length;
 
-            for (int i = 0; i < count; i++)
+            if (renderState && enqueue)
             {
-                if (CommonScriptableObjects.rendererState.Get() && enqueue)
+                for (int i = 0; i < count; i++)
                 {
                     payloadsToDecode.Enqueue(chunks[i]);
                 }
-                else
+            }
+            else
+            {
+                //threaded
+                QueuedSceneMessage_Scene[] messages = new QueuedSceneMessage_Scene[count];
+
+                for (int i = 0; i < count; i++)
                 {
-                    DecodeAndEnqueue(chunks[i]);
+                    messages[i] = GetEmptySceneMessage();
                 }
+
+                await TaskUtils.Run( () =>
+                {
+                    for (int i = 0; i < count; i++)
+                    {
+                        messages[i] = Decode(chunks[i], messages[i]);
+                    }
+                }, cancellationToken: tokenSource.Token);
+                
+                BatchEnqueue(messages);
+            }
+        }
+        
+        private QueuedSceneMessage_Scene GetEmptySceneMessage() { return sceneMessagesPool.Count > 0 ? sceneMessagesPool.Dequeue() : new QueuedSceneMessage_Scene(); }
+
+        //  todo: Throttle me!
+        private void BatchEnqueue(QueuedSceneMessage_Scene[] messages)
+        {
+            int messagesLength = messages.Length;
+
+            for (int i = 0; i < messagesLength; i++)
+            {
+                QueuedSceneMessage_Scene message = messages[i];
+
+                if (message != null)
+                    EnqueueSceneMessage(message);
             }
         }
 
-        private void DecodeAndEnqueue(string payload)
+        private QueuedSceneMessage_Scene Decode(string payload, QueuedSceneMessage_Scene queuedMessage)
         {
             ProfilingEvents.OnMessageDecodeStart?.Invoke("Misc");
 
-            string sceneId;
-            string message;
-            string messageTag;
-            PB_SendSceneMessage sendSceneMessage;
-
-            if (!MessageDecoder.DecodePayloadChunk(payload, out sceneId, out message, out messageTag, out sendSceneMessage))
+            if (!MessageDecoder.DecodePayloadChunk(payload,
+                out string sceneId,
+                out string message,
+                out string messageTag,
+                out PB_SendSceneMessage sendSceneMessage))
             {
-                return;
+                return null;
             }
-
-            QueuedSceneMessage_Scene queuedMessage;
-
-            if (sceneMessagesPool.Count > 0)
-                queuedMessage = sceneMessagesPool.Dequeue();
-            else
-                queuedMessage = new QueuedSceneMessage_Scene();
 
             MessageDecoder.DecodeSceneMessage(sceneId, message, messageTag, sendSceneMessage, ref queuedMessage);
 
-            EnqueueSceneMessage(queuedMessage);
-
             ProfilingEvents.OnMessageDecodeEnds?.Invoke("Misc");
+
+            return queuedMessage;
         }
 
         private IEnumerator DeferredDecoding()
@@ -394,13 +436,14 @@ namespace DCL
                 {
                     string payload = payloadsToDecode.Dequeue();
 
-                    DecodeAndEnqueue(payload);
+                    EnqueueSceneMessage(Decode(payload, GetEmptySceneMessage()));
 
                     if (Time.realtimeSinceStartup - start < maxTimeForDecode)
                         continue;
                 }
 
                 yield return null;
+
                 start = Time.unscaledTime;
             }
         }
@@ -408,8 +451,8 @@ namespace DCL
         public void EnqueueSceneMessage(QueuedSceneMessage_Scene message)
         {
             bool isGlobalScene = WorldStateUtils.IsGlobalScene(message.sceneId);
-            Environment.i.messaging.manager.AddControllerIfNotExists(this, message.sceneId);
-            Environment.i.messaging.manager.Enqueue(isGlobalScene, message);
+            messagingControllersManager.AddControllerIfNotExists(this, message.sceneId);
+            messagingControllersManager.Enqueue(isGlobalScene, message);
         }
 
         //======================================================================
@@ -428,8 +471,9 @@ namespace DCL
         public IParcelScene CreateTestScene(LoadParcelScenesMessage.UnityParcelScene data = null)
         {
             IParcelScene result = WorldStateUtils.CreateTestScene(data);
-            Environment.i.messaging.manager.AddControllerIfNotExists(this, data.id);
+            messagingControllersManager.AddControllerIfNotExists(this, data.id);
             OnNewSceneAdded?.Invoke(result);
+
             return result;
         }
 
@@ -437,7 +481,7 @@ namespace DCL
         {
             Environment.i.world.state.readyScenes.Add(sceneId);
 
-            Environment.i.messaging.manager.SetSceneReady(sceneId);
+            messagingControllersManager.SetSceneReady(sceneId);
 
             WebInterface.ReportControlEvent(new WebInterface.SceneReady(sceneId));
             WebInterface.ReportCameraChanged(CommonScriptableObjects.cameraMode.Get(), sceneId);
@@ -501,6 +545,7 @@ namespace DCL
                     if (!worldState.globalSceneIds.Contains(scene.sceneData.id) && characterIsInsideScene)
                     {
                         worldState.currentSceneId = scene.sceneData.id;
+
                         break;
                     }
                 }
@@ -558,12 +603,12 @@ namespace DCL
 
             var sceneToLoad = scene;
 
-
             DebugConfig debugConfig = DataStore.i.debugConfig;
 #if UNITY_EDITOR
             if (debugConfig.soloScene && sceneToLoad.basePosition.ToString() != debugConfig.soloSceneCoords.ToString())
             {
                 SendSceneReady(sceneToLoad.id);
+
                 return;
             }
 #endif
@@ -591,7 +636,7 @@ namespace DCL
 
                 OnNewSceneAdded?.Invoke(newScene);
 
-                Environment.i.messaging.manager.AddControllerIfNotExists(this, newScene.sceneData.id);
+                messagingControllersManager.AddControllerIfNotExists(this, newScene.sceneData.id);
 
                 if (VERBOSE)
                     Debug.Log($"{Time.frameCount} : Load parcel scene {newScene.sceneData.basePosition}");
@@ -645,9 +690,9 @@ namespace DCL
 
             ProfilingEvents.OnMessageWillQueue?.Invoke(MessagingTypes.SCENE_DESTROY);
 
-            Environment.i.messaging.manager.ForceEnqueueToGlobal(MessagingBusType.INIT, queuedMessage);
+            messagingControllersManager.ForceEnqueueToGlobal(MessagingBusType.INIT, queuedMessage);
 
-            Environment.i.messaging.manager.RemoveController(sceneKey);
+            messagingControllersManager.RemoveController(sceneKey);
 
             IWorldState worldState = Environment.i.world.state;
 
@@ -684,7 +729,7 @@ namespace DCL
             worldState.scenesSortedByDistance.Remove(scene);
 
             // Remove messaging controller for unloaded scene
-            Environment.i.messaging.manager.RemoveController(scene.sceneData.id);
+            messagingControllersManager.RemoveController(scene.sceneData.id);
 
             scene.Cleanup(!CommonScriptableObjects.rendererState.Get());
 
@@ -733,7 +778,7 @@ namespace DCL
 
             ProfilingEvents.OnMessageWillQueue?.Invoke(MessagingTypes.SCENE_LOAD);
 
-            Environment.i.messaging.manager.ForceEnqueueToGlobal(MessagingBusType.INIT, queuedMessage);
+            messagingControllersManager.ForceEnqueueToGlobal(MessagingBusType.INIT, queuedMessage);
 
             if (VERBOSE)
                 Debug.Log($"{Time.frameCount} : Load parcel scene queue {decentralandSceneJSON}");
@@ -746,7 +791,7 @@ namespace DCL
 
             ProfilingEvents.OnMessageWillQueue?.Invoke(MessagingTypes.SCENE_UPDATE);
 
-            Environment.i.messaging.manager.ForceEnqueueToGlobal(MessagingBusType.INIT, queuedMessage);
+            messagingControllersManager.ForceEnqueueToGlobal(MessagingBusType.INIT, queuedMessage);
         }
 
         public void UnloadAllScenesQueued()
@@ -806,7 +851,7 @@ namespace DCL
 
             worldState.globalSceneIds.Add(newGlobalSceneId);
 
-            Environment.i.messaging.manager.AddControllerIfNotExists(this, newGlobalSceneId, isGlobal: true);
+            messagingControllersManager.AddControllerIfNotExists(this, newGlobalSceneId, isGlobal: true);
 
             if (VERBOSE)
             {

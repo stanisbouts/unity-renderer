@@ -80,6 +80,7 @@ namespace DCL
         public bool enableProceduralSkybox = false;
         public bool soloScene = true;
         public bool multithreaded = false;
+        public bool disableTextureCompress = false;
         public DebugPanel debugPanelMode = DebugPanel.Off;
 
         private void Awake()
@@ -92,6 +93,7 @@ namespace DCL
             DataStore.i.debugConfig.ignoreGlobalScenes = debugConfig.ignoreGlobalScenes;
             DataStore.i.debugConfig.msgStepByStep = debugConfig.msgStepByStep;
             DataStore.i.performance.multithreading.Set(multithreaded);
+            DataStore.i.performance.compressTextures.Set(!disableTextureCompress);
         }
 
         private void Start()

@@ -10,6 +10,7 @@ namespace DCL
     {
         public Texture2D texture { get; set; }
         public Asset_Texture dependencyAsset; // to store the default tex asset and release it accordingly
+        private BaseVariable<bool> compressTextures => DataStore.i.performance.compressTextures;
 
         public event System.Action OnCleanup;
 
@@ -20,7 +21,7 @@ namespace DCL
 
             texture.wrapMode = textureWrapMode;
             texture.filterMode = textureFilterMode;
-            texture.Compress(false);
+            if (compressTextures.Get()) texture.Compress(false);
             texture.Apply(textureFilterMode != FilterMode.Point, makeNoLongerReadable);
         }
 
