@@ -48,6 +48,21 @@ public class WearableItem
     public int issuedId;
 
     private readonly Dictionary<string, string> cachedI18n = new Dictionary<string, string>();
+    private readonly Dictionary<string, ContentProvider> cachedContentProviers =
+        new Dictionary<string, ContentProvider>();
+
+    private readonly string[] skinImplicitCategories =
+    {
+        WearableLiterals.Categories.EYES,
+        WearableLiterals.Categories.HAIR,
+        WearableLiterals.Categories.MOUTH,
+        WearableLiterals.Categories.EYEBROWS,
+        WearableLiterals.Categories.UPPER_BODY,
+        WearableLiterals.Categories.LOWER_BODY,
+        WearableLiterals.Categories.FEET,
+        WearableLiterals.Misc.HEAD,
+        WearableLiterals.Categories.FACIAL_HAIR
+    };
 
     public Representation GetRepresentation(string bodyShapeType)
     {
@@ -64,9 +79,6 @@ public class WearableItem
 
         return null;
     }
-
-    private readonly Dictionary<string, ContentProvider> cachedContentProviers =
-        new Dictionary<string, ContentProvider>();
 
     public ContentProvider GetContentProvider(string bodyShapeType)
     {
@@ -134,18 +146,9 @@ public class WearableItem
 
         if (IsSkin())
         {
-            hides = hides.Concat(new[]
-            {
-                WearableLiterals.Categories.EYES,
-                WearableLiterals.Categories.HAIR,
-                WearableLiterals.Categories.MOUTH,
-                WearableLiterals.Categories.EYEBROWS,
-                WearableLiterals.Categories.UPPER_BODY,
-                WearableLiterals.Categories.LOWER_BODY,
-                WearableLiterals.Categories.FEET,
-                WearableLiterals.Misc.HEAD,
-                WearableLiterals.Categories.FACIAL_HAIR
-            }).Distinct().ToArray();
+            hides = hides == null
+                ? skinImplicitCategories
+                : hides.Concat(skinImplicitCategories).Distinct().ToArray();
         }
 
         return hides;
