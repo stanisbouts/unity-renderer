@@ -14,7 +14,7 @@ public class AvatarEditorHUDView : MonoBehaviour
 
     public bool isOpen { get; private set; }
 
-    [System.Serializable]
+    [Serializable]
     public class AvatarEditorNavigationInfo
     {
         public Toggle toggle;
@@ -26,7 +26,7 @@ public class AvatarEditorHUDView : MonoBehaviour
         public void Initialize() { Application.quitting += () => toggle.onValueChanged.RemoveAllListeners(); }
     }
 
-    [System.Serializable]
+    [Serializable]
     public class AvatarEditorWearableFilter
     {
         public string categoryFilter;
@@ -92,8 +92,6 @@ public class AvatarEditorHUDView : MonoBehaviour
 
     [SerializeField]
     internal GameObject noWeb3Container;
-    
-    [SerializeField] internal UserContextConfirmationDialog smartItemReplacementConfirmationDialog;
 
     [SerializeField]
     internal Button noWeb3GoToMarketplaceButton;
@@ -107,17 +105,15 @@ public class AvatarEditorHUDView : MonoBehaviour
     
     [SerializeField] internal Button skinsConnectWalletButton;
 
-    [SerializeField] internal UserContextConfirmationDialog skinReplacementConfirmationDialog;
-
     internal static CharacterPreviewController characterPreviewController;
     private AvatarEditorHUDController controller;
     internal readonly Dictionary<string, ItemSelector> selectorsByCategory = new Dictionary<string, ItemSelector>();
     private readonly HashSet<WearableItem> wearablesWithLoadingSpinner = new HashSet<WearableItem>();
 
-    public event System.Action<AvatarModel> OnAvatarAppear;
-    public event System.Action<bool> OnSetVisibility;
-    public event System.Action OnRandomize;
-    public event System.Action OnCloseActionTriggered;
+    public event Action<AvatarModel> OnAvatarAppear;
+    public event Action<bool> OnSetVisibility;
+    public event Action OnRandomize;
+    public event Action OnCloseActionTriggered;
 
     private void Awake()
     {
@@ -126,7 +122,7 @@ public class AvatarEditorHUDView : MonoBehaviour
         doneButton.interactable = false; //the default state of the button should be disable until a profile has been loaded.
         if (characterPreviewController == null)
         {
-            characterPreviewController = GameObject.Instantiate(characterPreviewPrefab).GetComponent<CharacterPreviewController>();
+            characterPreviewController = Instantiate(characterPreviewPrefab).GetComponent<CharacterPreviewController>();
             characterPreviewController.name = "_CharacterPreviewController";
         }
 
@@ -320,7 +316,8 @@ public class AvatarEditorHUDView : MonoBehaviour
             });
     }
 
-    public void AddWearable(WearableItem wearableItem, int amount)
+    public void AddWearable(WearableItem wearableItem, int amount,
+        Func<WearableItem, bool> equippedWearablesHiddenBy)
     {
         if (wearableItem == null)
             return;
@@ -331,10 +328,10 @@ public class AvatarEditorHUDView : MonoBehaviour
             return;
         }
 
-        selectorsByCategory[wearableItem.data.category].AddItemToggle(wearableItem, amount);
+        selectorsByCategory[wearableItem.data.category].AddItemToggle(wearableItem, amount, equippedWearablesHiddenBy);
         if (wearableItem.IsCollectible())
         {
-            collectiblesItemSelector.AddItemToggle(wearableItem, amount);
+            collectiblesItemSelector.AddItemToggle(wearableItem, amount, equippedWearablesHiddenBy);
         }
     }
 
@@ -468,30 +465,5 @@ public class AvatarEditorHUDView : MonoBehaviour
         rectTransform.localPosition = Vector2.zero;
         rectTransform.offsetMax = new Vector2(0f, 50f);
         rectTransform.offsetMin = Vector2.zero;
-    }
-
-    public void ShowReplaceSmartItemConfirmationPopup(Action<bool> confirmationCallback)
-    {
-        ShowConfirmationPopup(smartItemReplacementConfirmationDialog, confirmationCallback);
-    }
-
-    public void ShowReplaceSkinConfirmationPopup(Action<bool> confirmationCallback)
-    {
-        ShowConfirmationPopup(skinReplacementConfirmationDialog, confirmationCallback);
-    }
-
-    private void ShowConfirmationPopup(UserContextConfirmationDialog dialog,
-        Action<bool> confirmationCallback)
-    {
-        dialog.Show(() =>
-            {
-                confirmationCallback.Invoke(true);
-                dialog.Hide();
-            },
-            () =>
-            {
-                confirmationCallback.Invoke(false);
-                dialog.Hide();
-            });
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
@@ -42,7 +43,7 @@ public class ItemSelector : MonoBehaviour
 
     private void OnDestroy() { loadingRetryButton.onClick.RemoveListener(RetryLoading); }
 
-    public void AddItemToggle(WearableItem item, int amount)
+    public void AddItemToggle(WearableItem item, int amount, Func<WearableItem, bool> equippedWearablesHiddenBy)
     {
         if (item == null)
             return;
@@ -61,6 +62,7 @@ public class ItemSelector : MonoBehaviour
         }
 
         newToggle.Initialize(item, false, amount);
+        newToggle.SetEquippedWearablesHiddenBy(equippedWearablesHiddenBy);
         newToggle.OnClicked += ToggleClicked;
         newToggle.OnSellClicked += SellClicked;
         itemToggles.Add(item.id, newToggle);
