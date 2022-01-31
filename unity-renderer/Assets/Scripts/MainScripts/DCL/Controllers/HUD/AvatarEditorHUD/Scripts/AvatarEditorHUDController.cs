@@ -310,7 +310,7 @@ public class AvatarEditorHUDController : IHUD
                 if (sameCategoryEquipped != null)
                     UnequipWearable(sameCategoryEquipped);
 
-                if (IsTryingToReplaceSkin(wearable))
+                if (IsTryingToHideSkin(wearable))
                     UnequipWearable(model.GetWearable(WearableLiterals.Categories.SKIN));
                 
                 EquipWearable(wearable);
@@ -320,7 +320,7 @@ public class AvatarEditorHUDController : IHUD
         UpdateAvatarPreview();
     }
 
-    private bool IsTryingToReplaceSkin(WearableItem wearable)
+    private bool IsTryingToHideSkin(WearableItem wearable)
     {
         return model.wearables.Any(skin =>
         {
@@ -492,7 +492,7 @@ public class AvatarEditorHUDController : IHUD
 
         wearablesByCategory[wearable.data.category].Add(wearable);
         view.AddWearable(wearable, userProfile.GetItemAmount(id),
-            item => IsTryingToReplaceSkin(item) || IsTryingToHideSmartItem(item));
+            item => IsTryingToHideSkin(item) || IsTryingToHideSmartItem(item));
     }
 
     private void RemoveWearable(string id, WearableItem wearable)
