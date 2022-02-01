@@ -471,7 +471,9 @@ public class AvatarEditorHUDController : IHUD
         }
 
         wearablesByCategory[wearable.data.category].Add(wearable);
-        view.AddWearable(wearable, userProfile.GetItemAmount(id), IsSkinAndHasSkinEquippedAlready);
+        view.AddWearable(wearable, userProfile.GetItemAmount(id),
+            ShouldShowHideOtherWearablesToast,
+            ShouldShowReplaceOtherWearablesToast);
     }
 
     private void RemoveWearable(string id, WearableItem wearable)
@@ -521,7 +523,7 @@ public class AvatarEditorHUDController : IHUD
         UpdateAvatarPreview();
     }
 
-    public List<WearableItem> GetWearablesReplacedBy(WearableItem wearableItem)
+    private List<WearableItem> GetWearablesReplacedBy(WearableItem wearableItem)
     {
         var wearablesToReplace = new List<WearableItem>();
         var categoriesToReplace = new HashSet<string>(wearableItem.GetReplacesList(model.bodyShape.id) ?? new string[0]);
@@ -702,7 +704,7 @@ public class AvatarEditorHUDController : IHUD
         }
     }
     
-    private bool IsSkinAndHasSkinEquippedAlready(WearableItem wearable)
+    private bool ShouldShowHideOtherWearablesToast(WearableItem wearable)
     {
         var isWearingSkinAlready = model.wearables.Any(item => item.IsSkin());
         return wearable.IsSkin() && !isWearingSkinAlready;
@@ -715,5 +717,21 @@ public class AvatarEditorHUDController : IHUD
             return skin.IsSkin()
                    && skin.DoesHide(wearable.data.category, model.bodyShape.id);
         });
+    }
+    
+    private bool ShouldShowReplaceOtherWearablesToast(WearableItem wearable)
+    {
+        var toReplace = GetWearablesReplacedBy(wearable);
+        if (wearable == null || toReplace.Count == 0) return false;
+        if (model.wearables.Contains(wearable)) return false;
+        
+        // NOTE: why just 1?
+        if (toReplace.Count == 1)
+        {
+            var w = toReplace[0];
+            if (w.data.category == wearable.data.category)
+                return false;
+        }
+        return true;
     }
 }

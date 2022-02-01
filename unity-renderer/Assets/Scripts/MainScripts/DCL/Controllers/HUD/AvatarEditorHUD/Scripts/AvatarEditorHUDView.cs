@@ -135,7 +135,6 @@ public class AvatarEditorHUDView : MonoBehaviour
 
     private void Initialize(AvatarEditorHUDController controller)
     {
-        ItemToggle.getEquippedWearablesReplacedByFunc = controller.GetWearablesReplacedBy;
         this.controller = controller;
         gameObject.name = VIEW_OBJECT_NAME;
 
@@ -317,7 +316,8 @@ public class AvatarEditorHUDView : MonoBehaviour
     }
 
     public void AddWearable(WearableItem wearableItem, int amount,
-        Func<WearableItem, bool> equippedWearablesHiddenBy)
+        Func<WearableItem, bool> hideOtherWearablesToastStrategy,
+        Func<WearableItem, bool> replaceOtherWearablesToastStrategy)
     {
         if (wearableItem == null)
             return;
@@ -328,10 +328,12 @@ public class AvatarEditorHUDView : MonoBehaviour
             return;
         }
 
-        selectorsByCategory[wearableItem.data.category].AddItemToggle(wearableItem, amount, equippedWearablesHiddenBy);
+        selectorsByCategory[wearableItem.data.category].AddItemToggle(wearableItem, amount,
+            hideOtherWearablesToastStrategy, replaceOtherWearablesToastStrategy);
         if (wearableItem.IsCollectible())
         {
-            collectiblesItemSelector.AddItemToggle(wearableItem, amount, equippedWearablesHiddenBy);
+            collectiblesItemSelector.AddItemToggle(wearableItem, amount,
+                hideOtherWearablesToastStrategy, replaceOtherWearablesToastStrategy);
         }
     }
 

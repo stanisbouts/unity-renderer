@@ -32,8 +32,7 @@ public class ItemToggle : UIButton, IPointerEnterHandler, IPointerExitHandler
 
     private AvatarEditorHUDView view;
 
-    //Todo change this for a confirmation popup or implement it in a more elegant way
-    public static Func<WearableItem, List<WearableItem>> getEquippedWearablesReplacedByFunc;
+    private Func<WearableItem, bool> getEquippedWearablesReplacedByFunc;
     private Func<WearableItem, bool> getEquippedWearablesHiddenBy;
 
     public bool selected
@@ -90,17 +89,10 @@ public class ItemToggle : UIButton, IPointerEnterHandler, IPointerExitHandler
 
     private bool ShowReplacementWarningPanel()
     {
-        var toReplace = getEquippedWearablesReplacedByFunc(wearableItem);
-        if (wearableItem == null || toReplace.Count == 0) return false;
-        if (toReplace.Count == 1)
-        {
-            var w = toReplace[0];
-            if (w.data.category == wearableItem.data.category)
-                return false;
-        }
-
-        warningPanel.SetActive(true);
-        return true;
+        if (getEquippedWearablesReplacedByFunc == null) return false;
+        var shouldShow = getEquippedWearablesReplacedByFunc(wearableItem);
+        warningPanel.SetActive(shouldShow);
+        return shouldShow;
     }
     
     private bool ShowHidingWarningPanel()
@@ -117,8 +109,11 @@ public class ItemToggle : UIButton, IPointerEnterHandler, IPointerExitHandler
         hideWarningPanel.SetActive(false);
     }
 
-    public void SetEquippedWearablesHiddenBy(Func<WearableItem, bool> function) =>
+    public void SetHideOtherWerablesToastStrategy(Func<WearableItem, bool> function) =>
         getEquippedWearablesHiddenBy = function;
+    
+    public void SetReplaceOtherWearablesToastStrategy(Func<WearableItem, bool> function) =>
+        getEquippedWearablesReplacedByFunc = function;
 
     private void OnThumbnailReady(Asset_Texture texture)
     {
