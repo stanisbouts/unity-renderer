@@ -47,6 +47,8 @@ public class AvatarEditorHUDController : IHUD
     private List<Nft> ownedNftCollectionsL2 = new List<Nft>();
     private bool avatarIsDirty = false;
     private float lastTimeOwnedWearablesChecked = 0;
+    private float prevRenderScale = 1.0f;
+    private Camera mainCamera;
 
     public AvatarEditorHUDView view;
 
@@ -309,34 +311,12 @@ public class AvatarEditorHUDController : IHUD
                 var sameCategoryEquipped = model.GetWearable(wearable.data.category);
                 if (sameCategoryEquipped != null)
                     UnequipWearable(sameCategoryEquipped);
-
-                if (IsTryingToHideSkin(wearable))
-                    UnequipWearable(model.GetWearable(WearableLiterals.Categories.SKIN));
                 
                 EquipWearable(wearable);
             }
         }
 
         UpdateAvatarPreview();
-    }
-
-    private bool IsTryingToHideSkin(WearableItem wearable)
-    {
-        return model.wearables.Any(skin =>
-        {
-            return skin.IsSkin()
-                   && skin.DoesHide(wearable.data.category, model.bodyShape.id);
-        });
-    }
-
-    private bool IsTryingToHideSmartItem(WearableItem wearable)
-    {
-        var categoriesThatWillHide = wearable.GetHidesList(model.bodyShape.id);
-        var hidesAnSmartItem = model.wearables.Any(w => w.IsSmart()
-                                                        && categoriesThatWillHide.Contains(w.data.category));
-        var hasSmartEquippedForSameCategory = model.GetWearable(wearable.data.category)
-            ?.IsSmart() ?? false;
-        return hasSmartEquippedForSameCategory | hidesAnSmartItem;
     }
 
     public void HairColorClicked(Color color)
@@ -491,8 +471,7 @@ public class AvatarEditorHUDController : IHUD
         }
 
         wearablesByCategory[wearable.data.category].Add(wearable);
-        view.AddWearable(wearable, userProfile.GetItemAmount(id),
-            item => IsTryingToHideSkin(item) || IsTryingToHideSmartItem(item));
+        view.AddWearable(wearable, userProfile.GetItemAmount(id), IsSkinAndHasSkinEquippedAlready);
     }
 
     private void RemoveWearable(string id, WearableItem wearable)
@@ -544,16 +523,17 @@ public class AvatarEditorHUDController : IHUD
 
     public List<WearableItem> GetWearablesReplacedBy(WearableItem wearableItem)
     {
-        List<WearableItem> wearablesToReplace = new List<WearableItem>();
+        var wearablesToReplace = new List<WearableItem>();
+        var categoriesToReplace = new HashSet<string>(wearableItem.GetReplacesList(model.bodyShape.id) ?? new string[0]);
 
-        HashSet<string> categoriesToReplace = new HashSet<string>(wearableItem.GetReplacesList(model.bodyShape.id) ?? new string[0]);
+        if (IsTryingToReplaceSkin(wearableItem) && !categoriesToReplace.Contains(WearableLiterals.Categories.SKIN))
+            categoriesToReplace.Add(WearableLiterals.Categories.SKIN);
 
-        int wearableCount = model.wearables.Count;
-        for (int i = 0; i < wearableCount; i++)
+        var wearableCount = model.wearables.Count;
+        for (var i = 0; i < wearableCount; i++)
         {
             var wearable = model.wearables[i];
-            if (wearable == null)
-                continue;
+            if (wearable == null) continue;
 
             if (categoriesToReplace.Contains(wearable.data.category))
             {
@@ -562,7 +542,7 @@ public class AvatarEditorHUDController : IHUD
             else
             {
                 //For retrocompatibility's sake we check current wearables against new one (compatibility matrix is symmetrical)
-                HashSet<string> replacesList = new HashSet<string>(wearable.GetReplacesList(model.bodyShape.id) ?? new string[0]);
+                var replacesList = new HashSet<string>(wearable.GetReplacesList(model.bodyShape.id) ?? new string[0]);
                 if (replacesList.Contains(wearableItem.data.category))
                 {
                     wearablesToReplace.Add(wearable);
@@ -572,9 +552,6 @@ public class AvatarEditorHUDController : IHUD
 
         return wearablesToReplace;
     }
-
-    private float prevRenderScale = 1.0f;
-    private Camera mainCamera;
 
     public void SetVisibility(bool visible) { avatarEditorVisible.Set(visible); }
 
@@ -723,5 +700,20 @@ public class AvatarEditorHUDController : IHUD
             LoadUserProfile(userProfile, true);
             avatarIsDirty = false;
         }
+    }
+    
+    private bool IsSkinAndHasSkinEquippedAlready(WearableItem wearable)
+    {
+        var isWearingSkinAlready = model.wearables.Any(item => item.IsSkin());
+        return wearable.IsSkin() && !isWearingSkinAlready;
+    }
+
+    private bool IsTryingToReplaceSkin(WearableItem wearable)
+    {
+        return model.wearables.Any(skin =>
+        {
+            return skin.IsSkin()
+                   && skin.DoesHide(wearable.data.category, model.bodyShape.id);
+        });
     }
 }
